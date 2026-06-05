@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="AI Wealth Advisor", layout="wide")
 
 st.title("AI-Powered Wealth & Portfolio Advisor")
-st.caption("Not financial advice.")
+st.caption("Not financial advice")
 
 # ---------------------------
 # Helper Functions
@@ -256,7 +256,7 @@ with c2:
     st.plotly_chart(fig_alloc, use_container_width=True)
 
 st.info(
-    f"AI-style insight: Based on your age, {risk_tolerance.lower()} risk profile, "
+    f"AI insight: Based on your age, {risk_tolerance.lower()} risk profile, "
     f"and {horizon}-year horizon, the model recommends {allocation['Equity']}% equity exposure. "
     f"This suggests a portfolio focused on growth while keeping some allocation in fixed income and cash."
 )
