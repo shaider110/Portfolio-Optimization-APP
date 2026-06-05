@@ -7,53 +7,180 @@ import plotly.graph_objects as go
 
 st.set_page_config(page_title="FinPilot AI", layout="wide")
 
-# ---------------------------
-# Styling
-# ---------------------------
-
+# ---------- STYLE ----------
 st.markdown("""
 <style>
+.stApp {
+    background: linear-gradient(180deg, #F1FBF6 0%, #FFFFFF 38%, #F6F8FB 100%);
+    color: #102A43;
+}
+
 .block-container {
-    padding-top: 2rem;
+    padding-top: 1.5rem;
+    max-width: 1250px;
 }
-.big-title {
-    font-size: 44px;
+
+.hero {
+    background: linear-gradient(135deg, #DFF7EA 0%, #EAF4FF 55%, #FFFFFF 100%);
+    padding: 46px;
+    border-radius: 32px;
+    border: 1px solid #D8EEE4;
+    box-shadow: 0 18px 45px rgba(16, 42, 67, 0.08);
+    margin-bottom: 26px;
+}
+
+.pill {
+    display: inline-block;
+    background: #BFF4D2;
+    color: #065F46;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
     font-weight: 800;
-    color: #F9FAFB;
+    margin-bottom: 16px;
 }
-.subtitle {
-    font-size: 18px;
-    color: #9CA3AF;
-    margin-bottom: 25px;
+
+.hero-title {
+    font-size: 50px;
+    font-weight: 900;
+    color: #062E2E;
+    line-height: 1.05;
+    max-width: 850px;
 }
-.section-card {
-    background: linear-gradient(135deg, #111827, #1F2937);
+
+.hero-subtitle {
+    font-size: 19px;
+    color: #42606A;
+    max-width: 780px;
+    margin-top: 16px;
+}
+
+.feature-card {
+    background: #FFFFFF;
+    padding: 24px;
+    border-radius: 26px;
+    border: 1px solid #E3EAF0;
+    box-shadow: 0px 12px 32px rgba(16, 42, 67, 0.07);
+    margin-bottom: 18px;
+}
+
+.card-title {
+    font-size: 22px;
+    font-weight: 850;
+    color: #102A43;
+    margin-bottom: 6px;
+}
+
+.card-text {
+    font-size: 15px;
+    color: #52616B;
+}
+
+.accent-box {
+    background: linear-gradient(135deg, #ECFDF5, #EFF6FF);
+    border: 1px solid #D7F2E4;
+    padding: 20px;
+    border-radius: 22px;
+    margin-bottom: 16px;
+}
+
+div[data-testid="stMetric"] {
+    background: #FFFFFF;
+    border: 1px solid #E3EAF0;
     padding: 18px;
-    border-radius: 18px;
-    border: 1px solid #374151;
-    margin-bottom: 15px;
+    border-radius: 22px;
+    box-shadow: 0px 10px 26px rgba(16, 42, 67, 0.06);
+}
+
+div[data-testid="stMetric"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 16px 34px rgba(16, 42, 67, 0.12);
+    transition: 0.25s ease;
+}
+
+.stTabs [data-baseweb="tab-list"] {
+    gap: 14px;
+    background: #FFFFFF;
+    padding: 12px;
+    border-radius: 999px;
+    border: 1px solid #E3EAF0;
+    box-shadow: 0px 10px 30px rgba(16, 42, 67, 0.07);
+    margin-bottom: 24px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    height: 52px;
+    padding: 12px 24px;
+    border-radius: 999px;
+    color: #102A43;
+    font-weight: 800;
+    background: transparent;
+    transition: all 0.25s ease;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background: #ECFDF5;
+    color: #047857;
+    transform: translateY(-2px);
+    box-shadow: inset 0 0 0 1px #A7F3D0;
+}
+
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(135deg, #10B981, #0EA5E9) !important;
+    color: white !important;
+    box-shadow: 0px 10px 24px rgba(16, 185, 129, 0.35);
+}
+
+.stTabs [aria-selected="true"]:hover {
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+[data-testid="stSidebar"] {
+    background: #FFFFFF;
+    border-right: 1px solid #E3EAF0;
+}
+
+.stButton > button {
+    background: linear-gradient(135deg, #10B981, #0EA5E9);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 0.7rem 1.4rem;
+    font-weight: 800;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 12px 25px rgba(14, 165, 233, 0.25);
+    transition: 0.25s ease;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="big-title">FinPilot AI</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="subtitle">AI-powered robo-advisory, portfolio analytics, optimization, and hedging intelligence.</div>',
-    unsafe_allow_html=True
-)
+st.markdown("""
+<div class="hero">
+    <div class="pill">AI-powered wealth management prototype</div>
+    <div class="hero-title">Build wealth automatically with smarter portfolio guidance.</div>
+    <div class="hero-subtitle">
+        FinPilot AI creates a personalized investment plan, tracks portfolios,
+        simulates future wealth, optimizes allocations, and helps users manage downside risk.
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 st.caption("Educational prototype only. Not financial advice.")
 
-# ---------------------------
-# Helper Functions
-# ---------------------------
-
-def apply_dark_theme(fig):
+# ---------- FUNCTIONS ----------
+def apply_clean_theme(fig):
     fig.update_layout(
-        template="plotly_dark",
+        template="plotly_white",
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#F9FAFB")
+        plot_bgcolor="rgba(255,255,255,0)",
+        font=dict(color="#102A43"),
+        title_font=dict(size=22, color="#102A43"),
+        margin=dict(l=20, r=20, t=60, b=20),
+        legend=dict(bgcolor="rgba(255,255,255,0)", borderwidth=0)
     )
     return fig
 
@@ -74,7 +201,6 @@ def recommend_allocation(age, risk_tolerance, horizon):
     equity = min(max(equity, 10), 90)
     bonds = max(0, 100 - equity - 5)
     cash = 100 - equity - bonds
-
     return {"Equity": equity, "Bonds / Fixed Income": bonds, "Cash": cash}
 
 
@@ -108,10 +234,8 @@ def risk_score(age, risk_tolerance, horizon, monthly_savings, annual_income):
 
 def get_stock_data(tickers, period="1y"):
     data = yf.download(tickers, period=period, auto_adjust=True, progress=False)["Close"]
-
     if isinstance(data, pd.Series):
         data = data.to_frame()
-
     return data.dropna()
 
 
@@ -119,11 +243,9 @@ def portfolio_metrics(prices, weights):
     returns = prices.pct_change().dropna()
     annual_returns = returns.mean() * 252
     cov_matrix = returns.cov() * 252
-
     expected_return = np.dot(weights, annual_returns)
     volatility = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
     sharpe = expected_return / volatility if volatility != 0 else 0
-
     return expected_return, volatility, sharpe, returns
 
 
@@ -155,11 +277,7 @@ def future_value_projection(current_savings, monthly_savings, annual_return, yea
     values = []
 
     for month in range(months + 1):
-        values.append({
-            "Month": month,
-            "Year": month / 12,
-            "Projected Value": portfolio_value
-        })
+        values.append({"Month": month, "Year": month / 12, "Projected Value": portfolio_value})
         portfolio_value = portfolio_value * (1 + monthly_return) + monthly_savings
 
     return pd.DataFrame(values)
@@ -169,23 +287,15 @@ def random_portfolios(prices, num_portfolios=3000):
     returns = prices.pct_change().dropna()
     annual_returns = returns.mean() * 252
     cov_matrix = returns.cov() * 252
-
     results = []
 
     for _ in range(num_portfolios):
         weights = np.random.random(len(prices.columns))
         weights = weights / np.sum(weights)
-
         port_return = np.dot(weights, annual_returns)
         port_vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
         sharpe = port_return / port_vol if port_vol != 0 else 0
-
-        results.append({
-            "Return": port_return,
-            "Volatility": port_vol,
-            "Sharpe": sharpe,
-            "Weights": weights
-        })
+        results.append({"Return": port_return, "Volatility": port_vol, "Sharpe": sharpe, "Weights": weights})
 
     return pd.DataFrame(results)
 
@@ -194,7 +304,6 @@ def monte_carlo_simulation(start_value, monthly_savings, expected_return, volati
     months = years * 12
     monthly_return = expected_return / 12
     monthly_volatility = volatility / np.sqrt(12)
-
     all_paths = []
 
     for _ in range(simulations):
@@ -220,7 +329,6 @@ def calculate_var(returns, portfolio_value, confidence=0.95):
 
 def calculate_portfolio_beta(prices, weights, period):
     benchmark = get_stock_data(["SPY"], period)
-
     combined = prices.join(benchmark, how="inner", rsuffix="_benchmark")
     returns = combined.pct_change().dropna()
 
@@ -230,8 +338,7 @@ def calculate_portfolio_beta(prices, weights, period):
     covariance = np.cov(portfolio_returns, benchmark_returns)[0][1]
     variance = np.var(benchmark_returns)
 
-    beta = covariance / variance if variance != 0 else 0
-    return beta
+    return covariance / variance if variance != 0 else 0
 
 
 def hedge_portfolio_analysis(prices, weights, portfolio_value, period):
@@ -239,7 +346,6 @@ def hedge_portfolio_analysis(prices, weights, portfolio_value, period):
 
     hedge_assets = ["BND", "GLD"]
     hedge_data = get_stock_data(hedge_assets, period)
-
     combined_prices = prices.join(hedge_data, how="inner")
 
     if combined_prices.empty:
@@ -250,16 +356,11 @@ def hedge_portfolio_analysis(prices, weights, portfolio_value, period):
 
     hedged_return, hedged_vol, hedged_sharpe, hedged_returns = portfolio_metrics(combined_prices, hedge_weights)
 
-    current_var_pct, current_var_amount = calculate_var(returns, portfolio_value)
-    hedged_var_pct, hedged_var_amount = calculate_var(hedged_returns, portfolio_value)
+    _, current_var_amount = calculate_var(returns, portfolio_value)
+    _, hedged_var_amount = calculate_var(hedged_returns, portfolio_value)
 
     comparison = pd.DataFrame({
-        "Metric": [
-            "Expected Annual Return",
-            "Annual Volatility",
-            "Sharpe Ratio",
-            "Daily 95% VaR"
-        ],
+        "Metric": ["Expected Annual Return", "Annual Volatility", "Sharpe Ratio", "Daily 95% VaR"],
         "Current Portfolio": [
             f"{current_return:.2%}",
             f"{current_vol:.2%}",
@@ -285,47 +386,29 @@ def hedge_portfolio_analysis(prices, weights, portfolio_value, period):
 def enhanced_ai_recommendation(age, risk_tolerance, horizon, score, expected_return, volatility, sharpe, allocation):
     recs = []
 
-    recs.append(
-        f"Your risk score is {score}/100, which places you in a {risk_tolerance.lower()} investor profile."
-    )
+    recs.append(f"Your risk score is {score}/100, placing you in a {risk_tolerance.lower()} investor profile.")
 
     if horizon >= 10:
-        recs.append(
-            "Your long investment horizon supports higher equity exposure because you have more time to absorb market volatility."
-        )
+        recs.append("Your long time horizon supports higher equity exposure because you have more time to absorb volatility.")
     else:
-        recs.append(
-            "Your shorter horizon means capital protection becomes more important, so the model favors more defensive allocation."
-        )
+        recs.append("Your shorter horizon means capital protection matters more, so the model favors a more defensive allocation.")
 
     if volatility > 0.30:
-        recs.append(
-            "Your current portfolio volatility is high. The app suggests adding defensive assets such as bonds, gold, or broad-market ETFs."
-        )
+        recs.append("Your current portfolio volatility is high. Adding defensive assets such as bonds, gold, or broad ETFs may help.")
     elif volatility < 0.15:
-        recs.append(
-            "Your portfolio volatility is low. This can reduce risk, but it may also limit long-term growth potential."
-        )
+        recs.append("Your portfolio volatility is low, which reduces risk but may limit long-term growth.")
     else:
-        recs.append(
-            "Your portfolio volatility appears balanced for a diversified investment strategy."
-        )
+        recs.append("Your portfolio volatility appears balanced for a diversified strategy.")
 
     if sharpe > 1:
-        recs.append(
-            "Your Sharpe ratio is strong, meaning the portfolio is producing attractive return relative to its risk."
-        )
+        recs.append("Your Sharpe ratio is strong, meaning the portfolio is producing attractive return relative to risk.")
     elif sharpe < 0.5:
-        recs.append(
-            "Your Sharpe ratio is weak, meaning the portfolio may not be efficiently rewarding you for the risk taken."
-        )
+        recs.append("Your Sharpe ratio is weak, meaning the portfolio may not be efficiently rewarding you for the risk taken.")
     else:
-        recs.append(
-            "Your Sharpe ratio is reasonable, but diversification and optimization may improve risk-adjusted returns."
-        )
+        recs.append("Your Sharpe ratio is reasonable, but optimization may improve risk-adjusted returns.")
 
     recs.append(
-        f"The strategic allocation recommendation is {allocation['Equity']}% equities, "
+        f"The recommended strategic allocation is {allocation['Equity']}% equities, "
         f"{allocation['Bonds / Fixed Income']}% fixed income, and {allocation['Cash']}% cash."
     )
 
@@ -340,25 +423,16 @@ def stress_test(weights):
         "Strong bull market": 0.15
     }
 
-    results = []
-
-    for scenario, shock in scenarios.items():
-        estimated_return = shock * np.sum(weights)
-        results.append({
-            "Scenario": scenario,
-            "Estimated Portfolio Impact": f"{estimated_return:.2%}"
-        })
-
-    return pd.DataFrame(results)
+    return pd.DataFrame({
+        "Scenario": list(scenarios.keys()),
+        "Estimated Portfolio Impact": [f"{shock * np.sum(weights):.2%}" for shock in scenarios.values()]
+    })
 
 
-# ---------------------------
-# Sidebar
-# ---------------------------
+# ---------- SIDEBAR ----------
+st.sidebar.title("FinPilot Controls")
 
-st.sidebar.title("Control Center")
-
-st.sidebar.header("Investor Inputs")
+st.sidebar.header("Investor Profile")
 age = st.sidebar.number_input("Age", min_value=18, max_value=100, value=25)
 annual_income = st.sidebar.number_input("Annual Income", min_value=0, value=60000, step=5000)
 current_savings = st.sidebar.number_input("Current Savings", min_value=0, value=10000, step=1000)
@@ -366,7 +440,7 @@ monthly_savings = st.sidebar.number_input("Monthly Savings", min_value=0, value=
 risk_tolerance = st.sidebar.selectbox("Risk Tolerance", ["Conservative", "Moderate", "Aggressive"])
 horizon = st.sidebar.slider("Investment Horizon", 1, 40, 10)
 
-st.sidebar.header("Portfolio Inputs")
+st.sidebar.header("Portfolio")
 ticker_input = st.sidebar.text_input("Tickers", "AAPL, MSFT, NVDA, SPY")
 period = st.sidebar.selectbox("Market Data Period", ["6mo", "1y", "2y", "5y"], index=1)
 
@@ -375,40 +449,39 @@ tickers = [ticker.strip().upper() for ticker in ticker_input.split(",") if ticke
 allocation = recommend_allocation(age, risk_tolerance, horizon)
 score = risk_score(age, risk_tolerance, horizon, monthly_savings, annual_income)
 
-# ---------------------------
-# Main App
-# ---------------------------
-
+# ---------- APP ----------
 try:
     prices = get_stock_data(tickers, period)
-
     normalized = prices / prices.iloc[0] * 100
 
     weights_equal = np.array([1 / len(tickers)] * len(tickers))
     expected_return, volatility, sharpe, returns = portfolio_metrics(prices, weights_equal)
-
     health_score = portfolio_health_score(len(tickers), volatility, sharpe)
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Risk Score", f"{score}/100")
-    c2.metric("Expected Return", f"{expected_return:.2%}")
-    c3.metric("Volatility", f"{volatility:.2%}")
-    c4.metric("Sharpe Ratio", f"{sharpe:.2f}")
+    top1, top2, top3, top4 = st.columns(4)
+    top1.metric("Risk Score", f"{score}/100")
+    top2.metric("Expected Return", f"{expected_return:.2%}")
+    top3.metric("Volatility", f"{volatility:.2%}")
+    top4.metric("Sharpe Ratio", f"{sharpe:.2f}")
 
-    tab_profile, tab_market, tab_portfolio, tab_ai, tab_risk = st.tabs([
-        "Investor Intelligence",
-        "Market Dashboard",
-        "Portfolio Analytics",
-        "AI Advisor",
-        "Risk & Hedging Lab"
+    tab_plan, tab_invest, tab_analyze, tab_optimize, tab_protect = st.tabs([
+        "Plan",
+        "Invest",
+        "Analyze",
+        "Optimize",
+        "Protect"
     ])
 
-    # ---------------------------
-    # Investor Intelligence
-    # ---------------------------
-
-    with tab_profile:
-        st.subheader("Investor Intelligence")
+    with tab_plan:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="card-title">Your personalized wealth plan</div>
+            <div class="card-text">
+                FinPilot AI uses your age, income, savings, risk tolerance, and time horizon
+                to create a long-term allocation plan.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
         allocation_df = pd.DataFrame({
             "Asset Class": list(allocation.keys()),
@@ -418,7 +491,6 @@ try:
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("### Recommended Strategic Allocation")
             st.dataframe(allocation_df, use_container_width=True)
 
         with col2:
@@ -426,48 +498,59 @@ try:
                 allocation_df,
                 names="Asset Class",
                 values="Allocation (%)",
-                hole=0.45,
-                title="Robo-Advisor Allocation"
+                hole=0.55,
+                title="Recommended Allocation",
+                color="Asset Class",
+                color_discrete_sequence=["#10B981", "#0EA5E9", "#F59E0B"]
             )
-            fig_alloc = apply_dark_theme(fig_alloc)
+            fig_alloc = apply_clean_theme(fig_alloc)
             st.plotly_chart(fig_alloc, use_container_width=True)
 
-        st.markdown("### Future Wealth Projection")
+        st.markdown("""
+        <div class="accent-box">
+            <b>Projection engine:</b> Estimate how your current savings and monthly investments may grow over time.
+        </div>
+        """, unsafe_allow_html=True)
 
         assumed_return = st.slider("Assumed Annual Return (%)", 1, 15, 7) / 100
         projection = future_value_projection(current_savings, monthly_savings, assumed_return, horizon)
-        final_value = projection["Projected Value"].iloc[-1]
 
-        st.metric("Projected Portfolio Value", f"${final_value:,.0f}")
+        st.metric("Projected Portfolio Value", f"${projection['Projected Value'].iloc[-1]:,.0f}")
 
-        fig_projection = px.line(
+        fig_projection = px.area(
             projection,
             x="Year",
             y="Projected Value",
-            title="Projected Wealth Growth"
+            title="Projected Wealth Growth",
+            color_discrete_sequence=["#10B981"]
         )
-        fig_projection = apply_dark_theme(fig_projection)
+        fig_projection = apply_clean_theme(fig_projection)
         st.plotly_chart(fig_projection, use_container_width=True)
 
-    # ---------------------------
-    # Market Dashboard
-    # ---------------------------
+    with tab_invest:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="card-title">Market and portfolio tracking</div>
+            <div class="card-text">
+                Track selected stocks and ETFs against a broad market benchmark.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    with tab_market:
-        st.subheader("Market Dashboard")
-
-        st.markdown("### Latest Price Data")
         st.dataframe(prices.tail(), use_container_width=True)
 
         fig_prices = go.Figure()
 
-        for ticker in normalized.columns:
+        colors = ["#10B981", "#0EA5E9", "#8B5CF6", "#F59E0B", "#EF4444", "#14B8A6"]
+
+        for i, ticker in enumerate(normalized.columns):
             fig_prices.add_trace(
                 go.Scatter(
                     x=normalized.index,
                     y=normalized[ticker],
                     mode="lines",
-                    name=ticker
+                    name=ticker,
+                    line=dict(width=3, color=colors[i % len(colors)])
                 )
             )
 
@@ -480,7 +563,7 @@ try:
                 y=benchmark_norm["SPY"],
                 mode="lines",
                 name="Benchmark: SPY",
-                line=dict(dash="dash")
+                line=dict(width=3, dash="dash", color="#111827")
             )
         )
 
@@ -490,17 +573,18 @@ try:
             yaxis_title="Indexed Value"
         )
 
-        fig_prices = apply_dark_theme(fig_prices)
+        fig_prices = apply_clean_theme(fig_prices)
         st.plotly_chart(fig_prices, use_container_width=True)
 
-    # ---------------------------
-    # Portfolio Analytics
-    # ---------------------------
-
-    with tab_portfolio:
-        st.subheader("Portfolio Analytics")
-
-        st.write("Set your portfolio weights:")
+    with tab_analyze:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="card-title">Portfolio analytics dashboard</div>
+            <div class="card-text">
+                Analyze return, volatility, Sharpe ratio, diversification, and correlations.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
         weights = []
         cols = st.columns(len(tickers))
@@ -516,164 +600,137 @@ try:
             weights.append(weight)
 
         total_weight = sum(weights)
-
-        if total_weight == 0:
-            st.warning("Total portfolio weight cannot be zero.")
-            weights = weights_equal
-        else:
-            weights = np.array(weights) / total_weight
+        weights = weights_equal if total_weight == 0 else np.array(weights) / total_weight
 
         expected_return, volatility, sharpe, returns = portfolio_metrics(prices, weights)
         health_score = portfolio_health_score(len(tickers), volatility, sharpe)
 
-        m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Expected Annual Return", f"{expected_return:.2%}")
-        m2.metric("Annual Volatility", f"{volatility:.2%}")
-        m3.metric("Sharpe Ratio", f"{sharpe:.2f}")
-        m4.metric("Portfolio Health Score", f"{health_score}/100")
-
-        st.markdown("### Correlation Matrix")
+        a1, a2, a3, a4 = st.columns(4)
+        a1.metric("Expected Return", f"{expected_return:.2%}")
+        a2.metric("Volatility", f"{volatility:.2%}")
+        a3.metric("Sharpe Ratio", f"{sharpe:.2f}")
+        a4.metric("Health Score", f"{health_score}/100")
 
         corr = returns.corr()
+
         fig_corr = px.imshow(
             corr,
             text_auto=True,
             title="Asset Correlation Matrix",
-            color_continuous_scale="RdBu"
+            color_continuous_scale=["#10B981", "#FFFFFF", "#EF4444"]
         )
-        fig_corr = apply_dark_theme(fig_corr)
+        fig_corr = apply_clean_theme(fig_corr)
         st.plotly_chart(fig_corr, use_container_width=True)
 
-        st.markdown("### Optimization Studio")
+    with tab_optimize:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="card-title">Optimization studio</div>
+            <div class="card-text">
+                Run Monte Carlo simulations and find portfolios with stronger risk-adjusted performance.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        if st.button("Run Portfolio Optimization"):
-            portfolios = random_portfolios(prices)
+        o1, o2 = st.columns(2)
 
-            best_portfolio = portfolios.loc[portfolios["Sharpe"].idxmax()]
-            min_vol_portfolio = portfolios.loc[portfolios["Volatility"].idxmin()]
+        with o1:
+            if st.button("Run Portfolio Optimization"):
+                portfolios = random_portfolios(prices)
+                best_portfolio = portfolios.loc[portfolios["Sharpe"].idxmax()]
+                min_vol_portfolio = portfolios.loc[portfolios["Volatility"].idxmin()]
 
-            opt_weights = pd.DataFrame({
-                "Ticker": prices.columns,
-                "Max Sharpe Weight (%)": best_portfolio["Weights"] * 100,
-                "Min Volatility Weight (%)": min_vol_portfolio["Weights"] * 100
-            })
+                opt_weights = pd.DataFrame({
+                    "Ticker": prices.columns,
+                    "Max Sharpe Weight (%)": best_portfolio["Weights"] * 100,
+                    "Min Volatility Weight (%)": min_vol_portfolio["Weights"] * 100
+                })
 
-            st.dataframe(opt_weights, use_container_width=True)
+                st.dataframe(opt_weights, use_container_width=True)
 
-            fig_frontier = px.scatter(
-                portfolios,
-                x="Volatility",
-                y="Return",
-                color="Sharpe",
-                title="Efficient Frontier Simulation",
-                labels={
-                    "Volatility": "Annual Volatility",
-                    "Return": "Expected Annual Return"
-                }
-            )
+                fig_frontier = px.scatter(
+                    portfolios,
+                    x="Volatility",
+                    y="Return",
+                    color="Sharpe",
+                    title="Efficient Frontier Simulation",
+                    color_continuous_scale="Viridis"
+                )
 
-            fig_frontier.add_trace(
-                go.Scatter(
+                fig_frontier.add_trace(go.Scatter(
                     x=[best_portfolio["Volatility"]],
                     y=[best_portfolio["Return"]],
                     mode="markers",
-                    marker=dict(size=16, symbol="star"),
+                    marker=dict(size=18, symbol="star", color="#F59E0B"),
                     name="Max Sharpe"
-                )
-            )
+                ))
 
-            fig_frontier.add_trace(
-                go.Scatter(
+                fig_frontier.add_trace(go.Scatter(
                     x=[min_vol_portfolio["Volatility"]],
                     y=[min_vol_portfolio["Return"]],
                     mode="markers",
-                    marker=dict(size=14, symbol="diamond"),
+                    marker=dict(size=15, symbol="diamond", color="#0EA5E9"),
                     name="Min Volatility"
+                ))
+
+                fig_frontier = apply_clean_theme(fig_frontier)
+                st.plotly_chart(fig_frontier, use_container_width=True)
+
+        with o2:
+            if st.button("Run Monte Carlo Simulation"):
+                mc = monte_carlo_simulation(
+                    current_savings,
+                    monthly_savings,
+                    expected_return,
+                    volatility,
+                    horizon,
+                    simulations=500
                 )
-            )
 
-            fig_frontier = apply_dark_theme(fig_frontier)
-            st.plotly_chart(fig_frontier, use_container_width=True)
+                final_values = mc.iloc[-1]
 
-        st.markdown("### Monte Carlo Simulator")
+                m1, m2, m3 = st.columns(3)
+                m1.metric("10th Percentile", f"${np.percentile(final_values, 10):,.0f}")
+                m2.metric("Median", f"${np.percentile(final_values, 50):,.0f}")
+                m3.metric("90th Percentile", f"${np.percentile(final_values, 90):,.0f}")
 
-        if st.button("Run Monte Carlo Simulation"):
-            mc = monte_carlo_simulation(
-                current_savings,
-                monthly_savings,
-                expected_return,
-                volatility,
-                horizon,
-                simulations=500
-            )
+                fig_mc = go.Figure()
 
-            final_values = mc.iloc[-1]
-
-            a, b, c = st.columns(3)
-            a.metric("10th Percentile", f"${np.percentile(final_values, 10):,.0f}")
-            b.metric("Median Outcome", f"${np.percentile(final_values, 50):,.0f}")
-            c.metric("90th Percentile", f"${np.percentile(final_values, 90):,.0f}")
-
-            fig_mc = go.Figure()
-
-            for i in range(min(50, mc.shape[1])):
-                fig_mc.add_trace(
-                    go.Scatter(
-                        y=mc.iloc[:, i],
-                        mode="lines",
-                        opacity=0.25,
-                        showlegend=False
+                for i in range(min(50, mc.shape[1])):
+                    fig_mc.add_trace(
+                        go.Scatter(
+                            y=mc.iloc[:, i],
+                            mode="lines",
+                            opacity=0.22,
+                            line=dict(color="#10B981"),
+                            showlegend=False
+                        )
                     )
+
+                fig_mc.update_layout(
+                    title="Monte Carlo Portfolio Paths",
+                    xaxis_title="Months",
+                    yaxis_title="Portfolio Value"
                 )
 
-            fig_mc.update_layout(
-                title="Monte Carlo Portfolio Simulation",
-                xaxis_title="Months",
-                yaxis_title="Portfolio Value"
-            )
+                fig_mc = apply_clean_theme(fig_mc)
+                st.plotly_chart(fig_mc, use_container_width=True)
 
-            fig_mc = apply_dark_theme(fig_mc)
-            st.plotly_chart(fig_mc, use_container_width=True)
-
-    # ---------------------------
-    # AI Advisor
-    # ---------------------------
-
-    with tab_ai:
-        st.subheader("AI Recommendation Engine")
-
-        ai_recs = enhanced_ai_recommendation(
-            age,
-            risk_tolerance,
-            horizon,
-            score,
-            expected_return,
-            volatility,
-            sharpe,
-            allocation
-        )
-
-        for rec in ai_recs:
-            st.markdown(f"- {rec}")
-
-        st.info(
-            "This is a rule-based AI-style recommendation engine. "
-            "In a real fintech product, this could be upgraded using machine learning models, "
-            "client behavior data, market sentiment, and suitability rules."
-        )
-
-    # ---------------------------
-    # Risk & Hedging Lab
-    # ---------------------------
-
-    with tab_risk:
-        st.subheader("Risk & Hedging Lab")
+    with tab_protect:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="card-title">Protection and hedging lab</div>
+            <div class="card-text">
+                Estimate beta, downside risk, hedged allocation, and stress-test portfolio performance.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
         beta = calculate_portfolio_beta(prices, weights, period)
 
-        r1, r2, r3 = st.columns(3)
-        r1.metric("Portfolio Beta vs SPY", f"{beta:.2f}")
-        r2.metric("Current Volatility", f"{volatility:.2%}")
+        p1, p2, p3 = st.columns(3)
+        p1.metric("Beta vs SPY", f"{beta:.2f}")
+        p2.metric("Current Volatility", f"{volatility:.2%}")
 
         if beta > 1.2:
             hedge_signal = "High Market Risk"
@@ -682,43 +739,61 @@ try:
         else:
             hedge_signal = "Moderate Risk"
 
-        r3.metric("Hedge Signal", hedge_signal)
-
-        st.markdown("### Hedged Portfolio Simulation")
+        p3.metric("Hedge Signal", hedge_signal)
 
         hedge_result = hedge_portfolio_analysis(prices, weights, current_savings, period)
 
         if hedge_result is not None:
             hedge_comparison, hedge_weights_df = hedge_result
 
-            st.write(
-                "The app simulates a defensive hedge by shifting 20% of the portfolio into BND and GLD."
-            )
+            st.markdown("""
+            <div class="accent-box">
+                The hedge simulation shifts 20% of the portfolio into defensive assets:
+                10% BND and 10% GLD.
+            </div>
+            """, unsafe_allow_html=True)
 
             st.dataframe(hedge_comparison, use_container_width=True)
-
-            st.markdown("### Suggested Hedged Allocation")
-            st.dataframe(hedge_weights_df, use_container_width=True)
 
             fig_hedge = px.bar(
                 hedge_weights_df,
                 x="Asset",
                 y="Hedged Weight (%)",
-                title="Suggested Hedged Portfolio Allocation"
+                title="Suggested Hedged Allocation",
+                color="Asset",
+                color_discrete_sequence=colors
             )
-            fig_hedge = apply_dark_theme(fig_hedge)
+            fig_hedge = apply_clean_theme(fig_hedge)
             st.plotly_chart(fig_hedge, use_container_width=True)
 
         st.markdown("### Stress Test Scenarios")
+        st.dataframe(stress_test(weights), use_container_width=True)
 
-        stress_df = stress_test(weights)
-        st.dataframe(stress_df, use_container_width=True)
-
-        st.warning(
-            "The hedging module is simplified for educational purposes. "
-            "A real system would use options pricing, live market data, liquidity constraints, "
-            "tax rules, and regulatory suitability checks."
+        st.info(
+            "This hedging module is simplified for educational purposes. "
+            "A real platform would use live options data, liquidity, taxes, and regulatory suitability checks."
         )
+
+    with tab_plan:
+        pass
+
+    # AI recommendations appear as a final polished card under all tabs
+    st.markdown("""
+    <div class="feature-card">
+        <div class="card-title">AI Advisor Summary</div>
+        <div class="card-text">
+            A rule-based recommendation engine explains the user's risk profile, portfolio efficiency,
+            and allocation suitability.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    ai_recs = enhanced_ai_recommendation(
+        age, risk_tolerance, horizon, score, expected_return, volatility, sharpe, allocation
+    )
+
+    for rec in ai_recs:
+        st.markdown(f"- {rec}")
 
 except Exception as e:
     st.error("Something went wrong while loading the app.")
