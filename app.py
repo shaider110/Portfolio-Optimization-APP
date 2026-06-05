@@ -474,8 +474,8 @@ try:
         st.dataframe(stress_df, use_container_width=True)
 
         st.warning(
-            "The hedging and stress testing module is simplified for educational purposes. "
-            "A real platform would require deeper risk modeling, live options data, and regulatory suitability checks."
+            "The hedging and stress testing module is simplified. "
+            "This platform requires deeper risk modeling, live options data, and regulatory suitability checks."
         )
 
 except Exception as e:
