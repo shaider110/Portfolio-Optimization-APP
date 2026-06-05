@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="AI Wealth Advisor", layout="wide")
 
 st.title("AI-Powered Wealth & Portfolio Advisor")
-st.caption("Educational prototype only. Not financial advice.")
+st.caption("Not financial advice.")
 
 # ---------------------------
 # Helper Functions
