@@ -14,21 +14,18 @@ st.markdown("""
     background: linear-gradient(180deg, #F1FBF6 0%, #FFFFFF 38%, #F6F8FB 100%);
     color: #102A43;
 }
-
 .block-container {
     padding-top: 1.5rem;
     max-width: 1250px;
 }
-
 .hero {
     background: linear-gradient(135deg, #DFF7EA 0%, #EAF4FF 55%, #FFFFFF 100%);
-    padding: 46px;
+    padding: 42px;
     border-radius: 32px;
     border: 1px solid #D8EEE4;
     box-shadow: 0 18px 45px rgba(16, 42, 67, 0.08);
-    margin-bottom: 26px;
+    margin-bottom: 24px;
 }
-
 .pill {
     display: inline-block;
     background: #BFF4D2;
@@ -37,24 +34,21 @@ st.markdown("""
     border-radius: 999px;
     font-size: 14px;
     font-weight: 800;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
-
 .hero-title {
-    font-size: 50px;
+    font-size: 48px;
     font-weight: 900;
     color: #062E2E;
     line-height: 1.05;
     max-width: 850px;
 }
-
 .hero-subtitle {
-    font-size: 19px;
+    font-size: 18px;
     color: #42606A;
-    max-width: 780px;
-    margin-top: 16px;
+    max-width: 820px;
+    margin-top: 15px;
 }
-
 .feature-card {
     background: #FFFFFF;
     padding: 24px;
@@ -63,35 +57,30 @@ st.markdown("""
     box-shadow: 0px 12px 32px rgba(16, 42, 67, 0.07);
     margin-bottom: 18px;
 }
-
 .card-title {
     font-size: 22px;
     font-weight: 850;
     color: #102A43;
     margin-bottom: 6px;
 }
-
 .card-text {
     font-size: 15px;
     color: #52616B;
 }
-
 .accent-box {
     background: linear-gradient(135deg, #ECFDF5, #EFF6FF);
     border: 1px solid #D7F2E4;
-    padding: 20px;
+    padding: 18px;
     border-radius: 22px;
     margin-bottom: 16px;
 }
-
 .risk-box {
     background: linear-gradient(135deg, #FFF7ED, #FEF2F2);
     border: 1px solid #FED7AA;
-    padding: 20px;
+    padding: 18px;
     border-radius: 22px;
     margin-bottom: 16px;
 }
-
 div[data-testid="stMetric"] {
     background: #FFFFFF;
     border: 1px solid #E3EAF0;
@@ -99,51 +88,44 @@ div[data-testid="stMetric"] {
     border-radius: 22px;
     box-shadow: 0px 10px 26px rgba(16, 42, 67, 0.06);
 }
-
 div[data-testid="stMetric"]:hover {
     transform: translateY(-3px);
     box-shadow: 0px 16px 34px rgba(16, 42, 67, 0.12);
     transition: 0.25s ease;
 }
-
 .stTabs [data-baseweb="tab-list"] {
-    gap: 14px;
+    gap: 12px;
     background: #FFFFFF;
-    padding: 12px;
+    padding: 10px;
     border-radius: 999px;
     border: 1px solid #E3EAF0;
     box-shadow: 0px 10px 30px rgba(16, 42, 67, 0.07);
     margin-bottom: 24px;
 }
-
 .stTabs [data-baseweb="tab"] {
-    height: 52px;
-    padding: 12px 24px;
+    height: 50px;
+    padding: 10px 22px;
     border-radius: 999px;
     color: #102A43;
     font-weight: 800;
     background: transparent;
     transition: all 0.25s ease;
 }
-
 .stTabs [data-baseweb="tab"]:hover {
     background: #ECFDF5;
     color: #047857;
     transform: translateY(-2px);
     box-shadow: inset 0 0 0 1px #A7F3D0;
 }
-
 .stTabs [aria-selected="true"] {
     background: linear-gradient(135deg, #10B981, #0EA5E9) !important;
     color: white !important;
     box-shadow: 0px 10px 24px rgba(16, 185, 129, 0.35);
 }
-
 [data-testid="stSidebar"] {
     background: #FFFFFF;
     border-right: 1px solid #E3EAF0;
 }
-
 .stButton > button {
     background: linear-gradient(135deg, #10B981, #0EA5E9);
     color: white;
@@ -152,7 +134,6 @@ div[data-testid="stMetric"]:hover {
     padding: 0.7rem 1.4rem;
     font-weight: 800;
 }
-
 .stButton > button:hover {
     transform: translateY(-2px);
     box-shadow: 0px 12px 25px rgba(14, 165, 233, 0.25);
@@ -166,9 +147,8 @@ st.markdown("""
     <div class="pill">AI-powered wealth management prototype</div>
     <div class="hero-title">Build wealth automatically with smarter portfolio guidance.</div>
     <div class="hero-subtitle">
-        FinPilot AI creates a personalized investment plan, tracks portfolios,
-        simulates future wealth, optimizes allocations, analyzes dividend income,
-        manages downside risk, and stress-tests portfolios under macro uncertainty.
+        FinPilot AI creates a personalized investment plan, tracks portfolios, projects salary and contribution growth,
+        simulates future wealth, analyzes dividends, optimizes allocations, and stress-tests portfolios under macro uncertainty.
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -238,7 +218,7 @@ def risk_score(age, risk_tolerance, horizon, monthly_savings, annual_income):
     return int(min(max(score, 0), 100))
 
 
-@st.cache_data
+@st.cache_data(ttl=3600)
 def get_stock_data(tickers, period="1y"):
     data = yf.download(tickers, period=period, auto_adjust=True, progress=False)["Close"]
     if isinstance(data, pd.Series):
@@ -279,21 +259,50 @@ def portfolio_health_score(num_assets, volatility, sharpe):
     return int(min(max(score, 0), 100))
 
 
-def future_value_projection(current_savings, monthly_savings, annual_return, years):
+def contribution_for_month(base_monthly_savings, contribution_growth_rate, month):
+    year_number = month // 12
+    return base_monthly_savings * ((1 + contribution_growth_rate) ** year_number)
+
+
+def wealth_projection_with_growth(current_savings, monthly_savings, annual_return, years, contribution_growth_rate):
     months = years * 12
     monthly_return = annual_return / 12
     portfolio_value = current_savings
     values = []
 
     for month in range(months + 1):
+        current_contribution = contribution_for_month(monthly_savings, contribution_growth_rate, month)
+
         values.append({
             "Month": month,
             "Year": month / 12,
+            "Monthly Contribution": current_contribution,
             "Projected Value": portfolio_value
         })
-        portfolio_value = portfolio_value * (1 + monthly_return) + monthly_savings
+
+        portfolio_value = portfolio_value * (1 + monthly_return) + current_contribution
 
     return pd.DataFrame(values)
+
+
+def income_growth_schedule(annual_income, monthly_savings, salary_growth_rate, contribution_growth_rate, years):
+    rows = []
+
+    for year in range(years + 1):
+        salary = annual_income * ((1 + salary_growth_rate) ** year)
+        monthly_contribution = monthly_savings * ((1 + contribution_growth_rate) ** year)
+        annual_contribution = monthly_contribution * 12
+        contribution_rate = annual_contribution / salary if salary > 0 else 0
+
+        rows.append({
+            "Year": year,
+            "Projected Salary": salary,
+            "Monthly Contribution": monthly_contribution,
+            "Annual Contribution": annual_contribution,
+            "Contribution Rate": contribution_rate
+        })
+
+    return pd.DataFrame(rows)
 
 
 def random_portfolios(prices, num_portfolios=3000):
@@ -320,7 +329,7 @@ def random_portfolios(prices, num_portfolios=3000):
     return pd.DataFrame(results)
 
 
-def monte_carlo_simulation(start_value, monthly_savings, expected_return, volatility, years, simulations=500):
+def monte_carlo_simulation(start_value, monthly_savings, expected_return, volatility, years, contribution_growth_rate, simulations=500):
     months = years * 12
     monthly_return = expected_return / 12
     monthly_volatility = volatility / np.sqrt(12)
@@ -330,18 +339,19 @@ def monte_carlo_simulation(start_value, monthly_savings, expected_return, volati
         value = start_value
         path = []
 
-        for _ in range(months + 1):
+        for month in range(months + 1):
             path.append(value)
+            current_contribution = contribution_for_month(monthly_savings, contribution_growth_rate, month)
             random_return = np.random.normal(monthly_return, monthly_volatility)
-            value = value * (1 + random_return) + monthly_savings
+            value = value * (1 + random_return) + current_contribution
 
         all_paths.append(path)
 
     return pd.DataFrame(all_paths).T
 
 
-def calculate_var(returns, portfolio_value, confidence=0.95):
-    portfolio_returns = returns.mean(axis=1)
+def calculate_var(returns, weights, portfolio_value, confidence=0.95):
+    portfolio_returns = returns.dot(weights)
     var_percent = np.percentile(portfolio_returns, (1 - confidence) * 100)
     var_amount = portfolio_value * abs(var_percent)
     return var_percent, var_amount
@@ -376,8 +386,8 @@ def hedge_portfolio_analysis(prices, weights, portfolio_value, period):
 
     hedged_return, hedged_vol, hedged_sharpe, hedged_returns = portfolio_metrics(combined_prices, hedge_weights)
 
-    _, current_var_amount = calculate_var(returns, portfolio_value)
-    _, hedged_var_amount = calculate_var(hedged_returns, portfolio_value)
+    _, current_var_amount = calculate_var(returns, weights, portfolio_value)
+    _, hedged_var_amount = calculate_var(hedged_returns, hedge_weights, portfolio_value)
 
     comparison = pd.DataFrame({
         "Metric": ["Expected Annual Return", "Annual Volatility", "Sharpe Ratio", "Daily 95% VaR"],
@@ -459,6 +469,7 @@ def macro_uncertainty_score(epu, tpu, gpr):
     return int(total), label
 
 
+@st.cache_data(ttl=3600)
 def get_dividend_data(tickers):
     dividend_rows = []
 
@@ -500,12 +511,26 @@ def get_dividend_data(tickers):
     return pd.DataFrame(dividend_rows)
 
 
+def weighted_dividend_yield(dividend_df, tickers, weights):
+    yields = []
+
+    for ticker in tickers:
+        row = dividend_df[dividend_df["Ticker"] == ticker]
+        if not row.empty:
+            yields.append(float(row["Dividend Yield"].iloc[0]))
+        else:
+            yields.append(0)
+
+    return float(np.dot(weights, np.array(yields)))
+
+
 def dividend_reinvestment_projection(
     starting_value,
     monthly_savings,
     expected_return,
     dividend_yield,
     dividend_growth_rate,
+    contribution_growth_rate,
     years
 ):
     months = years * 12
@@ -519,9 +544,11 @@ def dividend_reinvestment_projection(
 
     for month in range(months + 1):
         year = month / 12
+        current_contribution = contribution_for_month(monthly_savings, contribution_growth_rate, month)
 
         rows.append({
             "Year": year,
+            "Monthly Contribution": current_contribution,
             "With Dividend Reinvestment": value_with_reinvestment,
             "Without Dividend Reinvestment": value_without_reinvestment,
             "Estimated Annual Dividend Income": annual_dividend_income
@@ -532,13 +559,13 @@ def dividend_reinvestment_projection(
 
         value_with_reinvestment = (
             value_with_reinvestment * (1 + monthly_price_return)
-            + monthly_savings
+            + current_contribution
             + monthly_dividend
         )
 
         value_without_reinvestment = (
             value_without_reinvestment * (1 + monthly_price_return)
-            + monthly_savings
+            + current_contribution
         )
 
         annual_dividend_income = value_with_reinvestment * current_dividend_yield
@@ -556,7 +583,9 @@ def enhanced_ai_recommendation(
     sharpe,
     allocation,
     macro_label,
-    avg_dividend_yield
+    dividend_yield,
+    salary_growth_rate,
+    contribution_growth_rate
 ):
     recs = []
 
@@ -566,6 +595,16 @@ def enhanced_ai_recommendation(
         recs.append("Your long time horizon supports higher equity exposure because you have more time to absorb volatility.")
     else:
         recs.append("Your shorter horizon means capital protection matters more, so the model favors a more defensive allocation.")
+
+    if contribution_growth_rate > 0:
+        recs.append(
+            f"Your contributions are assumed to grow by {contribution_growth_rate:.1%} annually, which can meaningfully improve long-term wealth accumulation."
+        )
+
+    if salary_growth_rate > 0:
+        recs.append(
+            f"Your salary is assumed to grow by {salary_growth_rate:.1%} annually, allowing the model to create a more realistic planning path."
+        )
 
     if volatility > 0.30:
         recs.append("Your current portfolio volatility is high. Adding defensive assets such as bonds, gold, or broad ETFs may help.")
@@ -581,9 +620,9 @@ def enhanced_ai_recommendation(
     else:
         recs.append("Your Sharpe ratio is reasonable, but optimization may improve risk-adjusted returns.")
 
-    if avg_dividend_yield > 0.03:
-        recs.append("Your portfolio has meaningful dividend income potential, which can improve long-term compounding if reinvested.")
-    elif avg_dividend_yield > 0:
+    if dividend_yield > 0.03:
+        recs.append("Your portfolio has meaningful dividend income potential, which can improve compounding if reinvested.")
+    elif dividend_yield > 0:
         recs.append("Your portfolio has some dividend exposure, but most expected growth may still come from capital appreciation.")
     else:
         recs.append("Your portfolio has little dividend income exposure, so projected growth mainly depends on price appreciation.")
@@ -627,15 +666,24 @@ st.sidebar.header("Investor Profile")
 age = st.sidebar.number_input("Age", min_value=18, max_value=100, value=25)
 annual_income = st.sidebar.number_input("Annual Income", min_value=0, value=60000, step=5000)
 current_savings = st.sidebar.number_input("Current Savings", min_value=0, value=10000, step=1000)
-monthly_savings = st.sidebar.number_input("Monthly Savings", min_value=0, value=1000, step=100)
+monthly_savings = st.sidebar.number_input("Starting Monthly Contribution", min_value=0, value=1000, step=100)
 risk_tolerance = st.sidebar.selectbox("Risk Tolerance", ["Conservative", "Moderate", "Aggressive"])
 horizon = st.sidebar.slider("Investment Horizon", 1, 40, 10)
+
+st.sidebar.header("Income Growth")
+salary_growth_rate = st.sidebar.slider("Expected Annual Salary Growth (%)", 0, 20, 5) / 100
+link_contribution_to_salary = st.sidebar.checkbox("Increase contributions with salary growth", value=True)
+
+if link_contribution_to_salary:
+    contribution_growth_rate = salary_growth_rate
+else:
+    contribution_growth_rate = st.sidebar.slider("Annual Contribution Growth (%)", 0, 20, 5) / 100
 
 st.sidebar.header("Portfolio")
 ticker_input = st.sidebar.text_input("Tickers", "AAPL, MSFT, NVDA, SPY, VYM")
 period = st.sidebar.selectbox("Market Data Period", ["6mo", "1y", "2y", "5y"], index=1)
 
-st.sidebar.header("Macro Risk Inputs")
+st.sidebar.header("Macro Risk")
 macro_scenario = st.sidebar.selectbox(
     "Macro Scenario",
     [
@@ -655,7 +703,6 @@ tickers = [ticker.strip().upper() for ticker in ticker_input.split(",") if ticke
 
 allocation = recommend_allocation(age, risk_tolerance, horizon)
 score = risk_score(age, risk_tolerance, horizon, monthly_savings, annual_income)
-
 macro_score, macro_label = macro_uncertainty_score(epu_input, tpu_input, gpr_input)
 scenario_data = macro_scenario_assumptions(macro_scenario)
 
@@ -663,21 +710,47 @@ scenario_data = macro_scenario_assumptions(macro_scenario)
 
 try:
     prices = get_stock_data(tickers, period)
+
+    if prices.empty:
+        st.error("No market data found. Please check the ticker symbols.")
+        st.stop()
+
     normalized = prices / prices.iloc[0] * 100
 
-    weights_equal = np.array([1 / len(tickers)] * len(tickers))
-    expected_return, volatility, sharpe, returns = portfolio_metrics(prices, weights_equal)
+    st.sidebar.header("Portfolio Weights")
+    use_custom_weights = st.sidebar.checkbox("Use custom weights", value=False)
 
+    if use_custom_weights:
+        raw_weights = []
+        for ticker in tickers:
+            raw_weights.append(
+                st.sidebar.number_input(
+                    f"{ticker} weight (%)",
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=round(100 / len(tickers), 2),
+                    step=1.0
+                )
+            )
+
+        if sum(raw_weights) == 0:
+            weights = np.array([1 / len(tickers)] * len(tickers))
+        else:
+            weights = np.array(raw_weights) / sum(raw_weights)
+    else:
+        weights = np.array([1 / len(tickers)] * len(tickers))
+
+    expected_return, volatility, sharpe, returns = portfolio_metrics(prices, weights)
     adjusted_return = expected_return + scenario_data["return_adjustment"]
     adjusted_volatility = volatility * scenario_data["volatility_multiplier"]
 
     dividend_df = get_dividend_data(tickers)
-    avg_dividend_yield = dividend_df["Dividend Yield"].mean()
+    portfolio_dividend_yield = weighted_dividend_yield(dividend_df, tickers, weights)
 
     top1, top2, top3, top4 = st.columns(4)
     top1.metric("Risk Score", f"{score}/100")
     top2.metric("Expected Return", f"{expected_return:.2%}")
-    top3.metric("Dividend Yield", f"{avg_dividend_yield:.2%}")
+    top3.metric("Dividend Yield", f"{portfolio_dividend_yield:.2%}")
     top4.metric("Macro Risk", macro_label)
 
     tab_plan, tab_invest, tab_income, tab_analyze, tab_optimize, tab_macro, tab_protect = st.tabs([
@@ -695,8 +768,7 @@ try:
         <div class="feature-card">
             <div class="card-title">Your personalized wealth plan</div>
             <div class="card-text">
-                FinPilot AI uses your age, income, savings, risk tolerance, and time horizon
-                to create a long-term allocation plan.
+                Create a long-term investment path using savings, income growth, contribution growth, and risk profile.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -721,29 +793,75 @@ try:
                 color="Asset Class",
                 color_discrete_sequence=["#10B981", "#0EA5E9", "#F59E0B"]
             )
-            fig_alloc = apply_clean_theme(fig_alloc)
-            st.plotly_chart(fig_alloc, use_container_width=True)
+            st.plotly_chart(apply_clean_theme(fig_alloc), use_container_width=True)
 
         st.markdown("""
         <div class="accent-box">
-            <b>Projection engine:</b> Estimate how your current savings and monthly investments may grow over time.
+            <b>Salary and contribution growth:</b> The projection increases monthly contributions each year based on the selected growth assumption.
         </div>
         """, unsafe_allow_html=True)
 
-        assumed_return = st.slider("Assumed Annual Return (%)", 1, 15, 7) / 100
-        projection = future_value_projection(current_savings, monthly_savings, assumed_return, horizon)
+        assumed_return = st.slider("Planning Return Assumption (%)", 1, 15, 7) / 100
 
-        st.metric("Projected Portfolio Value", f"${projection['Projected Value'].iloc[-1]:,.0f}")
+        projection = wealth_projection_with_growth(
+            current_savings=current_savings,
+            monthly_savings=monthly_savings,
+            annual_return=assumed_return,
+            years=horizon,
+            contribution_growth_rate=contribution_growth_rate
+        )
+
+        income_schedule = income_growth_schedule(
+            annual_income=annual_income,
+            monthly_savings=monthly_savings,
+            salary_growth_rate=salary_growth_rate,
+            contribution_growth_rate=contribution_growth_rate,
+            years=horizon
+        )
+
+        p1, p2, p3 = st.columns(3)
+        p1.metric("Projected Portfolio Value", f"${projection['Projected Value'].iloc[-1]:,.0f}")
+        p2.metric("Final Monthly Contribution", f"${projection['Monthly Contribution'].iloc[-1]:,.0f}")
+        p3.metric("Final Projected Salary", f"${income_schedule['Projected Salary'].iloc[-1]:,.0f}")
 
         fig_projection = px.area(
             projection,
             x="Year",
             y="Projected Value",
-            title="Projected Wealth Growth",
+            title="Projected Wealth Growth With Rising Contributions",
             color_discrete_sequence=["#10B981"]
         )
-        fig_projection = apply_clean_theme(fig_projection)
-        st.plotly_chart(fig_projection, use_container_width=True)
+        st.plotly_chart(apply_clean_theme(fig_projection), use_container_width=True)
+
+        st.markdown("### Income and Contribution Schedule")
+        display_income_schedule = income_schedule.copy()
+        display_income_schedule["Projected Salary"] = display_income_schedule["Projected Salary"].apply(lambda x: f"${x:,.0f}")
+        display_income_schedule["Monthly Contribution"] = display_income_schedule["Monthly Contribution"].apply(lambda x: f"${x:,.0f}")
+        display_income_schedule["Annual Contribution"] = display_income_schedule["Annual Contribution"].apply(lambda x: f"${x:,.0f}")
+        display_income_schedule["Contribution Rate"] = display_income_schedule["Contribution Rate"].apply(lambda x: f"{x:.1%}")
+        st.dataframe(display_income_schedule, use_container_width=True)
+
+        fig_contribution = go.Figure()
+        fig_contribution.add_trace(go.Scatter(
+            x=income_schedule["Year"],
+            y=income_schedule["Projected Salary"],
+            mode="lines+markers",
+            name="Projected Salary",
+            line=dict(width=4, color="#0EA5E9")
+        ))
+        fig_contribution.add_trace(go.Scatter(
+            x=income_schedule["Year"],
+            y=income_schedule["Annual Contribution"],
+            mode="lines+markers",
+            name="Annual Contribution",
+            line=dict(width=4, color="#10B981")
+        ))
+        fig_contribution.update_layout(
+            title="Projected Salary vs Annual Contributions",
+            xaxis_title="Year",
+            yaxis_title="Amount"
+        )
+        st.plotly_chart(apply_clean_theme(fig_contribution), use_container_width=True)
 
     with tab_invest:
         st.markdown("""
@@ -761,37 +879,31 @@ try:
         colors = ["#10B981", "#0EA5E9", "#8B5CF6", "#F59E0B", "#EF4444", "#14B8A6", "#6366F1"]
 
         for i, ticker in enumerate(normalized.columns):
-            fig_prices.add_trace(
-                go.Scatter(
-                    x=normalized.index,
-                    y=normalized[ticker],
-                    mode="lines",
-                    name=ticker,
-                    line=dict(width=3, color=colors[i % len(colors)])
-                )
-            )
+            fig_prices.add_trace(go.Scatter(
+                x=normalized.index,
+                y=normalized[ticker],
+                mode="lines",
+                name=ticker,
+                line=dict(width=3, color=colors[i % len(colors)])
+            ))
 
         benchmark = get_stock_data(["SPY"], period)
         benchmark_norm = benchmark / benchmark.iloc[0] * 100
 
-        fig_prices.add_trace(
-            go.Scatter(
-                x=benchmark_norm.index,
-                y=benchmark_norm["SPY"],
-                mode="lines",
-                name="Benchmark: SPY",
-                line=dict(width=3, dash="dash", color="#111827")
-            )
-        )
+        fig_prices.add_trace(go.Scatter(
+            x=benchmark_norm.index,
+            y=benchmark_norm["SPY"],
+            mode="lines",
+            name="Benchmark: SPY",
+            line=dict(width=3, dash="dash", color="#111827")
+        ))
 
         fig_prices.update_layout(
             title="Growth of $100 vs S&P 500 ETF",
             xaxis_title="Date",
             yaxis_title="Indexed Value"
         )
-
-        fig_prices = apply_clean_theme(fig_prices)
-        st.plotly_chart(fig_prices, use_container_width=True)
+        st.plotly_chart(apply_clean_theme(fig_prices), use_container_width=True)
 
     with tab_income:
         st.markdown("""
@@ -803,20 +915,18 @@ try:
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("### Dividend Summary")
         display_dividend_df = dividend_df.copy()
         display_dividend_df["Dividend Yield"] = display_dividend_df["Dividend Yield"].apply(lambda x: f"{x:.2%}")
         display_dividend_df["Last Annual Dividend"] = display_dividend_df["Last Annual Dividend"].apply(lambda x: f"${x:.2f}")
         display_dividend_df["Estimated Price"] = display_dividend_df["Estimated Price"].apply(
             lambda x: f"${x:.2f}" if pd.notna(x) else "N/A"
         )
-
         st.dataframe(display_dividend_df, use_container_width=True)
 
-        estimated_annual_income = current_savings * avg_dividend_yield
+        estimated_annual_income = current_savings * portfolio_dividend_yield
 
         d1, d2, d3 = st.columns(3)
-        d1.metric("Average Dividend Yield", f"{avg_dividend_yield:.2%}")
+        d1.metric("Portfolio Dividend Yield", f"{portfolio_dividend_yield:.2%}")
         d2.metric("Estimated Annual Dividend Income", f"${estimated_annual_income:,.0f}")
         d3.metric("Monthly Dividend Income", f"${estimated_annual_income / 12:,.0f}")
 
@@ -829,8 +939,7 @@ try:
             color_discrete_sequence=["#10B981", "#0EA5E9", "#8B5CF6", "#F59E0B", "#EF4444", "#14B8A6", "#6366F1"]
         )
         fig_div_yield.update_yaxes(tickformat=".2%")
-        fig_div_yield = apply_clean_theme(fig_div_yield)
-        st.plotly_chart(fig_div_yield, use_container_width=True)
+        st.plotly_chart(apply_clean_theme(fig_div_yield), use_container_width=True)
 
         st.markdown("""
         <div class="accent-box">
@@ -844,8 +953,9 @@ try:
             starting_value=current_savings,
             monthly_savings=monthly_savings,
             expected_return=expected_return,
-            dividend_yield=avg_dividend_yield,
+            dividend_yield=portfolio_dividend_yield,
             dividend_growth_rate=dividend_growth_rate,
+            contribution_growth_rate=contribution_growth_rate,
             years=horizon
         )
 
@@ -859,35 +969,26 @@ try:
         r3.metric("Reinvestment Benefit", f"${reinvestment_benefit:,.0f}")
 
         fig_reinvest = go.Figure()
-
-        fig_reinvest.add_trace(
-            go.Scatter(
-                x=dividend_projection["Year"],
-                y=dividend_projection["With Dividend Reinvestment"],
-                mode="lines",
-                name="With Dividend Reinvestment",
-                line=dict(width=4, color="#10B981")
-            )
-        )
-
-        fig_reinvest.add_trace(
-            go.Scatter(
-                x=dividend_projection["Year"],
-                y=dividend_projection["Without Dividend Reinvestment"],
-                mode="lines",
-                name="Without Dividend Reinvestment",
-                line=dict(width=4, dash="dash", color="#0EA5E9")
-            )
-        )
-
+        fig_reinvest.add_trace(go.Scatter(
+            x=dividend_projection["Year"],
+            y=dividend_projection["With Dividend Reinvestment"],
+            mode="lines",
+            name="With Dividend Reinvestment",
+            line=dict(width=4, color="#10B981")
+        ))
+        fig_reinvest.add_trace(go.Scatter(
+            x=dividend_projection["Year"],
+            y=dividend_projection["Without Dividend Reinvestment"],
+            mode="lines",
+            name="Without Dividend Reinvestment",
+            line=dict(width=4, dash="dash", color="#0EA5E9")
+        ))
         fig_reinvest.update_layout(
             title="Portfolio Growth: Dividends Reinvested vs Not Reinvested",
             xaxis_title="Year",
             yaxis_title="Portfolio Value"
         )
-
-        fig_reinvest = apply_clean_theme(fig_reinvest)
-        st.plotly_chart(fig_reinvest, use_container_width=True)
+        st.plotly_chart(apply_clean_theme(fig_reinvest), use_container_width=True)
 
         fig_income_growth = px.area(
             dividend_projection,
@@ -896,12 +997,10 @@ try:
             title="Projected Annual Dividend Income Growth",
             color_discrete_sequence=["#F59E0B"]
         )
-
-        fig_income_growth = apply_clean_theme(fig_income_growth)
-        st.plotly_chart(fig_income_growth, use_container_width=True)
+        st.plotly_chart(apply_clean_theme(fig_income_growth), use_container_width=True)
 
         st.info(
-            "This module estimates dividend income using recent dividend history and a user-selected dividend growth rate. "
+            "Dividend estimates use recent dividend history and user-selected dividend growth. "
             "Actual dividends can change depending on company earnings, ETF distributions, and market conditions."
         )
 
@@ -910,28 +1009,11 @@ try:
         <div class="feature-card">
             <div class="card-title">Portfolio analytics dashboard</div>
             <div class="card-text">
-                Analyze return, volatility, Sharpe ratio, diversification, and correlations.
+                Analyze return, volatility, Sharpe ratio, diversification, and correlations using the selected portfolio weights.
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-        weights = []
-        cols = st.columns(len(tickers))
-
-        for i, ticker in enumerate(tickers):
-            weight = cols[i].number_input(
-                f"{ticker} Weight (%)",
-                min_value=0.0,
-                max_value=100.0,
-                value=round(100 / len(tickers), 2),
-                step=1.0
-            )
-            weights.append(weight)
-
-        total_weight = sum(weights)
-        weights = weights_equal if total_weight == 0 else np.array(weights) / total_weight
-
-        expected_return, volatility, sharpe, returns = portfolio_metrics(prices, weights)
         health_score = portfolio_health_score(len(tickers), volatility, sharpe)
 
         a1, a2, a3, a4 = st.columns(4)
@@ -939,6 +1021,14 @@ try:
         a2.metric("Volatility", f"{volatility:.2%}")
         a3.metric("Sharpe Ratio", f"{sharpe:.2f}")
         a4.metric("Health Score", f"{health_score}/100")
+
+        weights_df = pd.DataFrame({
+            "Ticker": tickers,
+            "Portfolio Weight": weights
+        })
+        weights_df["Portfolio Weight"] = weights_df["Portfolio Weight"].apply(lambda x: f"{x:.2%}")
+        st.markdown("### Current Portfolio Weights")
+        st.dataframe(weights_df, use_container_width=True)
 
         corr = returns.corr()
 
@@ -948,8 +1038,7 @@ try:
             title="Asset Correlation Matrix",
             color_continuous_scale=["#10B981", "#FFFFFF", "#EF4444"]
         )
-        fig_corr = apply_clean_theme(fig_corr)
-        st.plotly_chart(fig_corr, use_container_width=True)
+        st.plotly_chart(apply_clean_theme(fig_corr), use_container_width=True)
 
     with tab_optimize:
         st.markdown("""
@@ -999,16 +1088,16 @@ try:
                 name="Min Volatility"
             ))
 
-            fig_frontier = apply_clean_theme(fig_frontier)
-            st.plotly_chart(fig_frontier, use_container_width=True)
+            st.plotly_chart(apply_clean_theme(fig_frontier), use_container_width=True)
 
         if st.button("Run Standard Monte Carlo Simulation"):
             mc = monte_carlo_simulation(
-                current_savings,
-                monthly_savings,
-                expected_return,
-                volatility,
-                horizon,
+                start_value=current_savings,
+                monthly_savings=monthly_savings,
+                expected_return=expected_return,
+                volatility=volatility,
+                years=horizon,
+                contribution_growth_rate=contribution_growth_rate,
                 simulations=500
             )
 
@@ -1020,34 +1109,28 @@ try:
             m3.metric("90th Percentile", f"${np.percentile(final_values, 90):,.0f}")
 
             fig_mc = go.Figure()
-
             for i in range(min(50, mc.shape[1])):
-                fig_mc.add_trace(
-                    go.Scatter(
-                        y=mc.iloc[:, i],
-                        mode="lines",
-                        opacity=0.22,
-                        line=dict(color="#10B981"),
-                        showlegend=False
-                    )
-                )
+                fig_mc.add_trace(go.Scatter(
+                    y=mc.iloc[:, i],
+                    mode="lines",
+                    opacity=0.22,
+                    line=dict(color="#10B981"),
+                    showlegend=False
+                ))
 
             fig_mc.update_layout(
-                title="Standard Monte Carlo Portfolio Paths",
+                title="Standard Monte Carlo Portfolio Paths With Rising Contributions",
                 xaxis_title="Months",
                 yaxis_title="Portfolio Value"
             )
-
-            fig_mc = apply_clean_theme(fig_mc)
-            st.plotly_chart(fig_mc, use_container_width=True)
+            st.plotly_chart(apply_clean_theme(fig_mc), use_container_width=True)
 
     with tab_macro:
         st.markdown("""
         <div class="feature-card">
             <div class="card-title">Macro Risk Simulator</div>
             <div class="card-text">
-                Stress-test the portfolio under policy uncertainty, trade uncertainty,
-                geopolitical risk, and recession-style scenarios.
+                Stress-test the portfolio under policy uncertainty, trade uncertainty, geopolitical risk, and recession-style scenarios.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1065,16 +1148,8 @@ try:
         """, unsafe_allow_html=True)
 
         macro_inputs_df = pd.DataFrame({
-            "Indicator": [
-                "Economic Policy Uncertainty",
-                "Trade Policy Uncertainty",
-                "Geopolitical Risk"
-            ],
-            "Input Value": [
-                epu_input,
-                tpu_input,
-                gpr_input
-            ]
+            "Indicator": ["Economic Policy Uncertainty", "Trade Policy Uncertainty", "Geopolitical Risk"],
+            "Input Value": [epu_input, tpu_input, gpr_input]
         })
 
         fig_macro = px.bar(
@@ -1085,16 +1160,10 @@ try:
             title="Macro Uncertainty Indicators",
             color_discrete_sequence=["#10B981", "#0EA5E9", "#EF4444"]
         )
-        fig_macro = apply_clean_theme(fig_macro)
-        st.plotly_chart(fig_macro, use_container_width=True)
+        st.plotly_chart(apply_clean_theme(fig_macro), use_container_width=True)
 
         scenario_df = pd.DataFrame({
-            "Metric": [
-                "Base Expected Return",
-                "Macro-Adjusted Return",
-                "Base Volatility",
-                "Macro-Adjusted Volatility"
-            ],
+            "Metric": ["Base Expected Return", "Macro-Adjusted Return", "Base Volatility", "Macro-Adjusted Volatility"],
             "Value": [
                 f"{expected_return:.2%}",
                 f"{adjusted_return:.2%}",
@@ -1107,11 +1176,12 @@ try:
 
         if st.button("Run Macro-Adjusted Monte Carlo Simulation"):
             macro_mc = monte_carlo_simulation(
-                current_savings,
-                monthly_savings,
-                adjusted_return,
-                adjusted_volatility,
-                horizon,
+                start_value=current_savings,
+                monthly_savings=monthly_savings,
+                expected_return=adjusted_return,
+                volatility=adjusted_volatility,
+                years=horizon,
+                contribution_growth_rate=contribution_growth_rate,
                 simulations=500
             )
 
@@ -1123,30 +1193,25 @@ try:
             mc3.metric("Upside Case 90th Percentile", f"${np.percentile(final_values, 90):,.0f}")
 
             fig_macro_mc = go.Figure()
-
             for i in range(min(50, macro_mc.shape[1])):
-                fig_macro_mc.add_trace(
-                    go.Scatter(
-                        y=macro_mc.iloc[:, i],
-                        mode="lines",
-                        opacity=0.22,
-                        line=dict(color="#EF4444"),
-                        showlegend=False
-                    )
-                )
+                fig_macro_mc.add_trace(go.Scatter(
+                    y=macro_mc.iloc[:, i],
+                    mode="lines",
+                    opacity=0.22,
+                    line=dict(color="#EF4444"),
+                    showlegend=False
+                ))
 
             fig_macro_mc.update_layout(
                 title=f"Macro-Adjusted Monte Carlo Simulation: {macro_scenario}",
                 xaxis_title="Months",
                 yaxis_title="Portfolio Value"
             )
-
-            fig_macro_mc = apply_clean_theme(fig_macro_mc)
-            st.plotly_chart(fig_macro_mc, use_container_width=True)
+            st.plotly_chart(apply_clean_theme(fig_macro_mc), use_container_width=True)
 
         st.info(
             "This module uses scenario-based assumptions rather than a formal econometric model. "
-            "For a class project, this keeps the app explainable, reliable, and connected to real macro-risk indicators."
+            "It is designed to be explainable and useful for a class project."
         )
 
     with tab_protect:
@@ -1181,8 +1246,7 @@ try:
 
             st.markdown("""
             <div class="accent-box">
-                The hedge simulation shifts 20% of the portfolio into defensive assets:
-                10% BND and 10% GLD.
+                The hedge simulation shifts 20% of the portfolio into defensive assets: 10% BND and 10% GLD.
             </div>
             """, unsafe_allow_html=True)
 
@@ -1196,8 +1260,7 @@ try:
                 color="Asset",
                 color_discrete_sequence=["#10B981", "#0EA5E9", "#8B5CF6", "#F59E0B", "#EF4444", "#14B8A6"]
             )
-            fig_hedge = apply_clean_theme(fig_hedge)
-            st.plotly_chart(fig_hedge, use_container_width=True)
+            st.plotly_chart(apply_clean_theme(fig_hedge), use_container_width=True)
 
         st.markdown("### Stress Test Scenarios")
         st.dataframe(stress_test(weights), use_container_width=True)
@@ -1211,23 +1274,25 @@ try:
     <div class="feature-card">
         <div class="card-title">AI Advisor Summary</div>
         <div class="card-text">
-            A rule-based recommendation engine explains the user's risk profile, portfolio efficiency,
-            dividend income potential, allocation suitability, and macro-risk exposure.
+            A rule-based recommendation engine explains risk profile, contribution growth, dividend potential,
+            portfolio efficiency, allocation suitability, and macro-risk exposure.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     ai_recs = enhanced_ai_recommendation(
-        age,
-        risk_tolerance,
-        horizon,
-        score,
-        expected_return,
-        volatility,
-        sharpe,
-        allocation,
-        macro_label,
-        avg_dividend_yield
+        age=age,
+        risk_tolerance=risk_tolerance,
+        horizon=horizon,
+        score=score,
+        expected_return=expected_return,
+        volatility=volatility,
+        sharpe=sharpe,
+        allocation=allocation,
+        macro_label=macro_label,
+        dividend_yield=portfolio_dividend_yield,
+        salary_growth_rate=salary_growth_rate,
+        contribution_growth_rate=contribution_growth_rate
     )
 
     for rec in ai_recs:
