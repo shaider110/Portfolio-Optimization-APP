@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 
 st.set_page_config(page_title="FinPilot AI", layout="wide")
 
-# ---------- STYLE ----------
+# ---------------- STYLE ----------------
 st.markdown("""
 <style>
 .stApp {
@@ -84,6 +84,14 @@ st.markdown("""
     margin-bottom: 16px;
 }
 
+.risk-box {
+    background: linear-gradient(135deg, #FFF7ED, #FEF2F2);
+    border: 1px solid #FED7AA;
+    padding: 20px;
+    border-radius: 22px;
+    margin-bottom: 16px;
+}
+
 div[data-testid="stMetric"] {
     background: #FFFFFF;
     border: 1px solid #E3EAF0;
@@ -131,11 +139,6 @@ div[data-testid="stMetric"]:hover {
     box-shadow: 0px 10px 24px rgba(16, 185, 129, 0.35);
 }
 
-.stTabs [aria-selected="true"]:hover {
-    color: white !important;
-    transform: translateY(-2px);
-}
-
 [data-testid="stSidebar"] {
     background: #FFFFFF;
     border-right: 1px solid #E3EAF0;
@@ -164,14 +167,16 @@ st.markdown("""
     <div class="hero-title">Build wealth automatically with smarter portfolio guidance.</div>
     <div class="hero-subtitle">
         FinPilot AI creates a personalized investment plan, tracks portfolios,
-        simulates future wealth, optimizes allocations, and helps users manage downside risk.
+        simulates future wealth, optimizes allocations, manages downside risk,
+        and stress-tests portfolios under macro uncertainty.
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.caption("Educational prototype only. Not financial advice.")
 
-# ---------- FUNCTIONS ----------
+# ---------------- FUNCTIONS ----------------
+
 def apply_clean_theme(fig):
     fig.update_layout(
         template="plotly_white",
@@ -201,6 +206,7 @@ def recommend_allocation(age, risk_tolerance, horizon):
     equity = min(max(equity, 10), 90)
     bonds = max(0, 100 - equity - 5)
     cash = 100 - equity - bonds
+
     return {"Equity": equity, "Bonds / Fixed Income": bonds, "Cash": cash}
 
 
@@ -232,6 +238,7 @@ def risk_score(age, risk_tolerance, horizon, monthly_savings, annual_income):
     return int(min(max(score, 0), 100))
 
 
+@st.cache_data
 def get_stock_data(tickers, period="1y"):
     data = yf.download(tickers, period=period, auto_adjust=True, progress=False)["Close"]
     if isinstance(data, pd.Series):
@@ -243,9 +250,11 @@ def portfolio_metrics(prices, weights):
     returns = prices.pct_change().dropna()
     annual_returns = returns.mean() * 252
     cov_matrix = returns.cov() * 252
+
     expected_return = np.dot(weights, annual_returns)
     volatility = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
     sharpe = expected_return / volatility if volatility != 0 else 0
+
     return expected_return, volatility, sharpe, returns
 
 
@@ -277,7 +286,11 @@ def future_value_projection(current_savings, monthly_savings, annual_return, yea
     values = []
 
     for month in range(months + 1):
-        values.append({"Month": month, "Year": month / 12, "Projected Value": portfolio_value})
+        values.append({
+            "Month": month,
+            "Year": month / 12,
+            "Projected Value": portfolio_value
+        })
         portfolio_value = portfolio_value * (1 + monthly_return) + monthly_savings
 
     return pd.DataFrame(values)
@@ -292,10 +305,17 @@ def random_portfolios(prices, num_portfolios=3000):
     for _ in range(num_portfolios):
         weights = np.random.random(len(prices.columns))
         weights = weights / np.sum(weights)
+
         port_return = np.dot(weights, annual_returns)
         port_vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
         sharpe = port_return / port_vol if port_vol != 0 else 0
-        results.append({"Return": port_return, "Volatility": port_vol, "Sharpe": sharpe, "Weights": weights})
+
+        results.append({
+            "Return": port_return,
+            "Volatility": port_vol,
+            "Sharpe": sharpe,
+            "Weights": weights
+        })
 
     return pd.DataFrame(results)
 
@@ -383,7 +403,63 @@ def hedge_portfolio_analysis(prices, weights, portfolio_value, period):
     return comparison, hedge_weights_df
 
 
-def enhanced_ai_recommendation(age, risk_tolerance, horizon, score, expected_return, volatility, sharpe, allocation):
+def macro_scenario_assumptions(scenario):
+    scenarios = {
+        "Normal Market Environment": {
+            "return_adjustment": 0.00,
+            "volatility_multiplier": 1.00,
+            "risk_label": "Low",
+            "explanation": "Markets are assumed to behave near historical averages."
+        },
+        "Elevated Policy Uncertainty": {
+            "return_adjustment": -0.02,
+            "volatility_multiplier": 1.25,
+            "risk_label": "Moderate",
+            "explanation": "Higher policy uncertainty may reduce risk appetite and increase volatility."
+        },
+        "Trade War / Tariff Shock": {
+            "return_adjustment": -0.04,
+            "volatility_multiplier": 1.45,
+            "risk_label": "High",
+            "explanation": "Trade uncertainty can pressure global supply chains, margins, and equity valuations."
+        },
+        "Geopolitical Crisis": {
+            "return_adjustment": -0.06,
+            "volatility_multiplier": 1.70,
+            "risk_label": "Very High",
+            "explanation": "Geopolitical stress may create sharp market moves and demand for defensive assets."
+        },
+        "Recession Stress": {
+            "return_adjustment": -0.08,
+            "volatility_multiplier": 1.90,
+            "risk_label": "Severe",
+            "explanation": "A recession scenario assumes weak returns, higher volatility, and elevated drawdown risk."
+        }
+    }
+
+    return scenarios[scenario]
+
+
+def macro_uncertainty_score(epu, tpu, gpr):
+    epu_score = min(epu / 500, 1) * 40
+    tpu_score = min(tpu / 5000, 1) * 30
+    gpr_score = min(gpr / 500, 1) * 30
+
+    total = epu_score + tpu_score + gpr_score
+
+    if total < 35:
+        label = "Low Macro Risk"
+    elif total < 60:
+        label = "Moderate Macro Risk"
+    elif total < 80:
+        label = "High Macro Risk"
+    else:
+        label = "Extreme Macro Risk"
+
+    return int(total), label
+
+
+def enhanced_ai_recommendation(age, risk_tolerance, horizon, score, expected_return, volatility, sharpe, allocation, macro_label):
     recs = []
 
     recs.append(f"Your risk score is {score}/100, placing you in a {risk_tolerance.lower()} investor profile.")
@@ -407,6 +483,13 @@ def enhanced_ai_recommendation(age, risk_tolerance, horizon, score, expected_ret
     else:
         recs.append("Your Sharpe ratio is reasonable, but optimization may improve risk-adjusted returns.")
 
+    if "High" in macro_label or "Extreme" in macro_label:
+        recs.append("Macro uncertainty is elevated, so the model recommends stronger downside protection and lower concentration risk.")
+    elif "Moderate" in macro_label:
+        recs.append("Macro uncertainty is moderate, so the model recommends balanced exposure with some defensive allocation.")
+    else:
+        recs.append("Macro uncertainty is low, so the model does not require major defensive adjustments.")
+
     recs.append(
         f"The recommended strategic allocation is {allocation['Equity']}% equities, "
         f"{allocation['Bonds / Fixed Income']}% fixed income, and {allocation['Cash']}% cash."
@@ -419,6 +502,8 @@ def stress_test(weights):
     scenarios = {
         "COVID-style market shock": -0.20,
         "2022 inflation and rate shock": -0.18,
+        "Trade war shock": -0.16,
+        "Geopolitical crisis": -0.22,
         "Mild recession": -0.10,
         "Strong bull market": 0.15
     }
@@ -429,7 +514,7 @@ def stress_test(weights):
     })
 
 
-# ---------- SIDEBAR ----------
+# ---------------- SIDEBAR ----------------
 st.sidebar.title("FinPilot Controls")
 
 st.sidebar.header("Investor Profile")
@@ -444,31 +529,53 @@ st.sidebar.header("Portfolio")
 ticker_input = st.sidebar.text_input("Tickers", "AAPL, MSFT, NVDA, SPY")
 period = st.sidebar.selectbox("Market Data Period", ["6mo", "1y", "2y", "5y"], index=1)
 
+st.sidebar.header("Macro Risk Inputs")
+macro_scenario = st.sidebar.selectbox(
+    "Macro Scenario",
+    [
+        "Normal Market Environment",
+        "Elevated Policy Uncertainty",
+        "Trade War / Tariff Shock",
+        "Geopolitical Crisis",
+        "Recession Stress"
+    ]
+)
+
+epu_input = st.sidebar.slider("Economic Policy Uncertainty Index", 50, 700, 200)
+tpu_input = st.sidebar.slider("Trade Policy Uncertainty Index", 100, 6000, 1500)
+gpr_input = st.sidebar.slider("Geopolitical Risk Index", 50, 700, 180)
+
 tickers = [ticker.strip().upper() for ticker in ticker_input.split(",") if ticker.strip()]
 
 allocation = recommend_allocation(age, risk_tolerance, horizon)
 score = risk_score(age, risk_tolerance, horizon, monthly_savings, annual_income)
 
-# ---------- APP ----------
+macro_score, macro_label = macro_uncertainty_score(epu_input, tpu_input, gpr_input)
+scenario_data = macro_scenario_assumptions(macro_scenario)
+
+# ---------------- APP ----------------
 try:
     prices = get_stock_data(tickers, period)
     normalized = prices / prices.iloc[0] * 100
 
     weights_equal = np.array([1 / len(tickers)] * len(tickers))
     expected_return, volatility, sharpe, returns = portfolio_metrics(prices, weights_equal)
-    health_score = portfolio_health_score(len(tickers), volatility, sharpe)
+
+    adjusted_return = expected_return + scenario_data["return_adjustment"]
+    adjusted_volatility = volatility * scenario_data["volatility_multiplier"]
 
     top1, top2, top3, top4 = st.columns(4)
     top1.metric("Risk Score", f"{score}/100")
     top2.metric("Expected Return", f"{expected_return:.2%}")
     top3.metric("Volatility", f"{volatility:.2%}")
-    top4.metric("Sharpe Ratio", f"{sharpe:.2f}")
+    top4.metric("Macro Risk", macro_label)
 
-    tab_plan, tab_invest, tab_analyze, tab_optimize, tab_protect = st.tabs([
+    tab_plan, tab_invest, tab_analyze, tab_optimize, tab_macro, tab_protect = st.tabs([
         "Plan",
         "Invest",
         "Analyze",
         "Optimize",
+        "Macro Risk",
         "Protect"
     ])
 
@@ -540,7 +647,6 @@ try:
         st.dataframe(prices.tail(), use_container_width=True)
 
         fig_prices = go.Figure()
-
         colors = ["#10B981", "#0EA5E9", "#8B5CF6", "#F59E0B", "#EF4444", "#14B8A6"]
 
         for i, ticker in enumerate(normalized.columns):
@@ -632,89 +738,193 @@ try:
         </div>
         """, unsafe_allow_html=True)
 
-        o1, o2 = st.columns(2)
+        if st.button("Run Portfolio Optimization"):
+            portfolios = random_portfolios(prices)
+            best_portfolio = portfolios.loc[portfolios["Sharpe"].idxmax()]
+            min_vol_portfolio = portfolios.loc[portfolios["Volatility"].idxmin()]
 
-        with o1:
-            if st.button("Run Portfolio Optimization"):
-                portfolios = random_portfolios(prices)
-                best_portfolio = portfolios.loc[portfolios["Sharpe"].idxmax()]
-                min_vol_portfolio = portfolios.loc[portfolios["Volatility"].idxmin()]
+            opt_weights = pd.DataFrame({
+                "Ticker": prices.columns,
+                "Max Sharpe Weight (%)": best_portfolio["Weights"] * 100,
+                "Min Volatility Weight (%)": min_vol_portfolio["Weights"] * 100
+            })
 
-                opt_weights = pd.DataFrame({
-                    "Ticker": prices.columns,
-                    "Max Sharpe Weight (%)": best_portfolio["Weights"] * 100,
-                    "Min Volatility Weight (%)": min_vol_portfolio["Weights"] * 100
-                })
+            st.dataframe(opt_weights, use_container_width=True)
 
-                st.dataframe(opt_weights, use_container_width=True)
+            fig_frontier = px.scatter(
+                portfolios,
+                x="Volatility",
+                y="Return",
+                color="Sharpe",
+                title="Efficient Frontier Simulation",
+                color_continuous_scale="Viridis"
+            )
 
-                fig_frontier = px.scatter(
-                    portfolios,
-                    x="Volatility",
-                    y="Return",
-                    color="Sharpe",
-                    title="Efficient Frontier Simulation",
-                    color_continuous_scale="Viridis"
-                )
+            fig_frontier.add_trace(go.Scatter(
+                x=[best_portfolio["Volatility"]],
+                y=[best_portfolio["Return"]],
+                mode="markers",
+                marker=dict(size=18, symbol="star", color="#F59E0B"),
+                name="Max Sharpe"
+            ))
 
-                fig_frontier.add_trace(go.Scatter(
-                    x=[best_portfolio["Volatility"]],
-                    y=[best_portfolio["Return"]],
-                    mode="markers",
-                    marker=dict(size=18, symbol="star", color="#F59E0B"),
-                    name="Max Sharpe"
-                ))
+            fig_frontier.add_trace(go.Scatter(
+                x=[min_vol_portfolio["Volatility"]],
+                y=[min_vol_portfolio["Return"]],
+                mode="markers",
+                marker=dict(size=15, symbol="diamond", color="#0EA5E9"),
+                name="Min Volatility"
+            ))
 
-                fig_frontier.add_trace(go.Scatter(
-                    x=[min_vol_portfolio["Volatility"]],
-                    y=[min_vol_portfolio["Return"]],
-                    mode="markers",
-                    marker=dict(size=15, symbol="diamond", color="#0EA5E9"),
-                    name="Min Volatility"
-                ))
+            fig_frontier = apply_clean_theme(fig_frontier)
+            st.plotly_chart(fig_frontier, use_container_width=True)
 
-                fig_frontier = apply_clean_theme(fig_frontier)
-                st.plotly_chart(fig_frontier, use_container_width=True)
+        if st.button("Run Standard Monte Carlo Simulation"):
+            mc = monte_carlo_simulation(
+                current_savings,
+                monthly_savings,
+                expected_return,
+                volatility,
+                horizon,
+                simulations=500
+            )
 
-        with o2:
-            if st.button("Run Monte Carlo Simulation"):
-                mc = monte_carlo_simulation(
-                    current_savings,
-                    monthly_savings,
-                    expected_return,
-                    volatility,
-                    horizon,
-                    simulations=500
-                )
+            final_values = mc.iloc[-1]
 
-                final_values = mc.iloc[-1]
+            m1, m2, m3 = st.columns(3)
+            m1.metric("10th Percentile", f"${np.percentile(final_values, 10):,.0f}")
+            m2.metric("Median", f"${np.percentile(final_values, 50):,.0f}")
+            m3.metric("90th Percentile", f"${np.percentile(final_values, 90):,.0f}")
 
-                m1, m2, m3 = st.columns(3)
-                m1.metric("10th Percentile", f"${np.percentile(final_values, 10):,.0f}")
-                m2.metric("Median", f"${np.percentile(final_values, 50):,.0f}")
-                m3.metric("90th Percentile", f"${np.percentile(final_values, 90):,.0f}")
+            fig_mc = go.Figure()
 
-                fig_mc = go.Figure()
-
-                for i in range(min(50, mc.shape[1])):
-                    fig_mc.add_trace(
-                        go.Scatter(
-                            y=mc.iloc[:, i],
-                            mode="lines",
-                            opacity=0.22,
-                            line=dict(color="#10B981"),
-                            showlegend=False
-                        )
+            for i in range(min(50, mc.shape[1])):
+                fig_mc.add_trace(
+                    go.Scatter(
+                        y=mc.iloc[:, i],
+                        mode="lines",
+                        opacity=0.22,
+                        line=dict(color="#10B981"),
+                        showlegend=False
                     )
-
-                fig_mc.update_layout(
-                    title="Monte Carlo Portfolio Paths",
-                    xaxis_title="Months",
-                    yaxis_title="Portfolio Value"
                 )
 
-                fig_mc = apply_clean_theme(fig_mc)
-                st.plotly_chart(fig_mc, use_container_width=True)
+            fig_mc.update_layout(
+                title="Standard Monte Carlo Portfolio Paths",
+                xaxis_title="Months",
+                yaxis_title="Portfolio Value"
+            )
+
+            fig_mc = apply_clean_theme(fig_mc)
+            st.plotly_chart(fig_mc, use_container_width=True)
+
+    with tab_macro:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="card-title">Macro Risk Simulator</div>
+            <div class="card-text">
+                Stress-test the portfolio under policy uncertainty, trade uncertainty,
+                geopolitical risk, and recession-style scenarios.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Macro Score", f"{macro_score}/100")
+        m2.metric("Macro Regime", macro_label)
+        m3.metric("Scenario", macro_scenario)
+        m4.metric("Scenario Risk", scenario_data["risk_label"])
+
+        st.markdown(f"""
+        <div class="risk-box">
+            <b>Scenario explanation:</b> {scenario_data["explanation"]}
+        </div>
+        """, unsafe_allow_html=True)
+
+        macro_inputs_df = pd.DataFrame({
+            "Indicator": [
+                "Economic Policy Uncertainty",
+                "Trade Policy Uncertainty",
+                "Geopolitical Risk"
+            ],
+            "Input Value": [
+                epu_input,
+                tpu_input,
+                gpr_input
+            ]
+        })
+
+        fig_macro = px.bar(
+            macro_inputs_df,
+            x="Indicator",
+            y="Input Value",
+            color="Indicator",
+            title="Macro Uncertainty Indicators",
+            color_discrete_sequence=["#10B981", "#0EA5E9", "#EF4444"]
+        )
+        fig_macro = apply_clean_theme(fig_macro)
+        st.plotly_chart(fig_macro, use_container_width=True)
+
+        scenario_df = pd.DataFrame({
+            "Metric": [
+                "Base Expected Return",
+                "Macro-Adjusted Return",
+                "Base Volatility",
+                "Macro-Adjusted Volatility"
+            ],
+            "Value": [
+                f"{expected_return:.2%}",
+                f"{adjusted_return:.2%}",
+                f"{volatility:.2%}",
+                f"{adjusted_volatility:.2%}"
+            ]
+        })
+
+        st.dataframe(scenario_df, use_container_width=True)
+
+        if st.button("Run Macro-Adjusted Monte Carlo Simulation"):
+            macro_mc = monte_carlo_simulation(
+                current_savings,
+                monthly_savings,
+                adjusted_return,
+                adjusted_volatility,
+                horizon,
+                simulations=500
+            )
+
+            final_values = macro_mc.iloc[-1]
+
+            mc1, mc2, mc3 = st.columns(3)
+            mc1.metric("Stress Case 10th Percentile", f"${np.percentile(final_values, 10):,.0f}")
+            mc2.metric("Median Outcome", f"${np.percentile(final_values, 50):,.0f}")
+            mc3.metric("Upside Case 90th Percentile", f"${np.percentile(final_values, 90):,.0f}")
+
+            fig_macro_mc = go.Figure()
+
+            for i in range(min(50, macro_mc.shape[1])):
+                fig_macro_mc.add_trace(
+                    go.Scatter(
+                        y=macro_mc.iloc[:, i],
+                        mode="lines",
+                        opacity=0.22,
+                        line=dict(color="#EF4444"),
+                        showlegend=False
+                    )
+                )
+
+            fig_macro_mc.update_layout(
+                title=f"Macro-Adjusted Monte Carlo Simulation: {macro_scenario}",
+                xaxis_title="Months",
+                yaxis_title="Portfolio Value"
+            )
+
+            fig_macro_mc = apply_clean_theme(fig_macro_mc)
+            st.plotly_chart(fig_macro_mc, use_container_width=True)
+
+        st.info(
+            "This module uses scenario-based assumptions rather than a formal econometric model. "
+            "For a class project, this keeps the app explainable, reliable, and connected to real macro-risk indicators."
+        )
 
     with tab_protect:
         st.markdown("""
@@ -761,7 +971,7 @@ try:
                 y="Hedged Weight (%)",
                 title="Suggested Hedged Allocation",
                 color="Asset",
-                color_discrete_sequence=colors
+                color_discrete_sequence=["#10B981", "#0EA5E9", "#8B5CF6", "#F59E0B", "#EF4444", "#14B8A6"]
             )
             fig_hedge = apply_clean_theme(fig_hedge)
             st.plotly_chart(fig_hedge, use_container_width=True)
@@ -774,22 +984,26 @@ try:
             "A real platform would use live options data, liquidity, taxes, and regulatory suitability checks."
         )
 
-    with tab_plan:
-        pass
-
-    # AI recommendations appear as a final polished card under all tabs
     st.markdown("""
     <div class="feature-card">
         <div class="card-title">AI Advisor Summary</div>
         <div class="card-text">
             A rule-based recommendation engine explains the user's risk profile, portfolio efficiency,
-            and allocation suitability.
+            allocation suitability, and macro-risk exposure.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     ai_recs = enhanced_ai_recommendation(
-        age, risk_tolerance, horizon, score, expected_return, volatility, sharpe, allocation
+        age,
+        risk_tolerance,
+        horizon,
+        score,
+        expected_return,
+        volatility,
+        sharpe,
+        allocation,
+        macro_label
     )
 
     for rec in ai_recs:
