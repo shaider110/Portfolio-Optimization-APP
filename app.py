@@ -167,8 +167,8 @@ st.markdown("""
     <div class="hero-title">Build wealth automatically with smarter portfolio guidance.</div>
     <div class="hero-subtitle">
         FinPilot AI creates a personalized investment plan, tracks portfolios,
-        simulates future wealth, optimizes allocations, manages downside risk,
-        and stress-tests portfolios under macro uncertainty.
+        simulates future wealth, optimizes allocations, analyzes dividend income,
+        manages downside risk, and stress-tests portfolios under macro uncertainty.
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -459,7 +459,105 @@ def macro_uncertainty_score(epu, tpu, gpr):
     return int(total), label
 
 
-def enhanced_ai_recommendation(age, risk_tolerance, horizon, score, expected_return, volatility, sharpe, allocation, macro_label):
+def get_dividend_data(tickers):
+    dividend_rows = []
+
+    for ticker in tickers:
+        try:
+            stock = yf.Ticker(ticker)
+            dividends = stock.dividends
+
+            try:
+                info = stock.info
+                price = info.get("regularMarketPrice", np.nan)
+            except Exception:
+                price = np.nan
+
+            if dividends is not None and not dividends.empty:
+                last_date = dividends.index.max()
+                one_year_ago = last_date - pd.DateOffset(years=1)
+                annual_dividend = dividends[dividends.index >= one_year_ago].sum()
+                dividend_yield = annual_dividend / price if price and price > 0 else 0
+            else:
+                annual_dividend = 0
+                dividend_yield = 0
+
+            dividend_rows.append({
+                "Ticker": ticker,
+                "Last Annual Dividend": annual_dividend,
+                "Estimated Price": price,
+                "Dividend Yield": dividend_yield
+            })
+
+        except Exception:
+            dividend_rows.append({
+                "Ticker": ticker,
+                "Last Annual Dividend": 0,
+                "Estimated Price": np.nan,
+                "Dividend Yield": 0
+            })
+
+    return pd.DataFrame(dividend_rows)
+
+
+def dividend_reinvestment_projection(
+    starting_value,
+    monthly_savings,
+    expected_return,
+    dividend_yield,
+    dividend_growth_rate,
+    years
+):
+    months = years * 12
+    monthly_price_return = expected_return / 12
+
+    value_with_reinvestment = starting_value
+    value_without_reinvestment = starting_value
+    annual_dividend_income = starting_value * dividend_yield
+
+    rows = []
+
+    for month in range(months + 1):
+        year = month / 12
+
+        rows.append({
+            "Year": year,
+            "With Dividend Reinvestment": value_with_reinvestment,
+            "Without Dividend Reinvestment": value_without_reinvestment,
+            "Estimated Annual Dividend Income": annual_dividend_income
+        })
+
+        current_dividend_yield = dividend_yield * ((1 + dividend_growth_rate) ** year)
+        monthly_dividend = value_with_reinvestment * (current_dividend_yield / 12)
+
+        value_with_reinvestment = (
+            value_with_reinvestment * (1 + monthly_price_return)
+            + monthly_savings
+            + monthly_dividend
+        )
+
+        value_without_reinvestment = (
+            value_without_reinvestment * (1 + monthly_price_return)
+            + monthly_savings
+        )
+
+        annual_dividend_income = value_with_reinvestment * current_dividend_yield
+
+    return pd.DataFrame(rows)
+
+
+def enhanced_ai_recommendation(
+    age,
+    risk_tolerance,
+    horizon,
+    score,
+    expected_return,
+    volatility,
+    sharpe,
+    allocation,
+    macro_label,
+    avg_dividend_yield
+):
     recs = []
 
     recs.append(f"Your risk score is {score}/100, placing you in a {risk_tolerance.lower()} investor profile.")
@@ -482,6 +580,13 @@ def enhanced_ai_recommendation(age, risk_tolerance, horizon, score, expected_ret
         recs.append("Your Sharpe ratio is weak, meaning the portfolio may not be efficiently rewarding you for the risk taken.")
     else:
         recs.append("Your Sharpe ratio is reasonable, but optimization may improve risk-adjusted returns.")
+
+    if avg_dividend_yield > 0.03:
+        recs.append("Your portfolio has meaningful dividend income potential, which can improve long-term compounding if reinvested.")
+    elif avg_dividend_yield > 0:
+        recs.append("Your portfolio has some dividend exposure, but most expected growth may still come from capital appreciation.")
+    else:
+        recs.append("Your portfolio has little dividend income exposure, so projected growth mainly depends on price appreciation.")
 
     if "High" in macro_label or "Extreme" in macro_label:
         recs.append("Macro uncertainty is elevated, so the model recommends stronger downside protection and lower concentration risk.")
@@ -515,6 +620,7 @@ def stress_test(weights):
 
 
 # ---------------- SIDEBAR ----------------
+
 st.sidebar.title("FinPilot Controls")
 
 st.sidebar.header("Investor Profile")
@@ -526,7 +632,7 @@ risk_tolerance = st.sidebar.selectbox("Risk Tolerance", ["Conservative", "Modera
 horizon = st.sidebar.slider("Investment Horizon", 1, 40, 10)
 
 st.sidebar.header("Portfolio")
-ticker_input = st.sidebar.text_input("Tickers", "AAPL, MSFT, NVDA, SPY")
+ticker_input = st.sidebar.text_input("Tickers", "AAPL, MSFT, NVDA, SPY, VYM")
 period = st.sidebar.selectbox("Market Data Period", ["6mo", "1y", "2y", "5y"], index=1)
 
 st.sidebar.header("Macro Risk Inputs")
@@ -554,6 +660,7 @@ macro_score, macro_label = macro_uncertainty_score(epu_input, tpu_input, gpr_inp
 scenario_data = macro_scenario_assumptions(macro_scenario)
 
 # ---------------- APP ----------------
+
 try:
     prices = get_stock_data(tickers, period)
     normalized = prices / prices.iloc[0] * 100
@@ -564,15 +671,19 @@ try:
     adjusted_return = expected_return + scenario_data["return_adjustment"]
     adjusted_volatility = volatility * scenario_data["volatility_multiplier"]
 
+    dividend_df = get_dividend_data(tickers)
+    avg_dividend_yield = dividend_df["Dividend Yield"].mean()
+
     top1, top2, top3, top4 = st.columns(4)
     top1.metric("Risk Score", f"{score}/100")
     top2.metric("Expected Return", f"{expected_return:.2%}")
-    top3.metric("Volatility", f"{volatility:.2%}")
+    top3.metric("Dividend Yield", f"{avg_dividend_yield:.2%}")
     top4.metric("Macro Risk", macro_label)
 
-    tab_plan, tab_invest, tab_analyze, tab_optimize, tab_macro, tab_protect = st.tabs([
+    tab_plan, tab_invest, tab_income, tab_analyze, tab_optimize, tab_macro, tab_protect = st.tabs([
         "Plan",
         "Invest",
+        "Income",
         "Analyze",
         "Optimize",
         "Macro Risk",
@@ -647,7 +758,7 @@ try:
         st.dataframe(prices.tail(), use_container_width=True)
 
         fig_prices = go.Figure()
-        colors = ["#10B981", "#0EA5E9", "#8B5CF6", "#F59E0B", "#EF4444", "#14B8A6"]
+        colors = ["#10B981", "#0EA5E9", "#8B5CF6", "#F59E0B", "#EF4444", "#14B8A6", "#6366F1"]
 
         for i, ticker in enumerate(normalized.columns):
             fig_prices.add_trace(
@@ -681,6 +792,118 @@ try:
 
         fig_prices = apply_clean_theme(fig_prices)
         st.plotly_chart(fig_prices, use_container_width=True)
+
+    with tab_income:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="card-title">Dividend income engine</div>
+            <div class="card-text">
+                Estimate dividend yield, annual income, dividend growth, and the long-term impact of reinvesting dividends.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("### Dividend Summary")
+        display_dividend_df = dividend_df.copy()
+        display_dividend_df["Dividend Yield"] = display_dividend_df["Dividend Yield"].apply(lambda x: f"{x:.2%}")
+        display_dividend_df["Last Annual Dividend"] = display_dividend_df["Last Annual Dividend"].apply(lambda x: f"${x:.2f}")
+        display_dividend_df["Estimated Price"] = display_dividend_df["Estimated Price"].apply(
+            lambda x: f"${x:.2f}" if pd.notna(x) else "N/A"
+        )
+
+        st.dataframe(display_dividend_df, use_container_width=True)
+
+        estimated_annual_income = current_savings * avg_dividend_yield
+
+        d1, d2, d3 = st.columns(3)
+        d1.metric("Average Dividend Yield", f"{avg_dividend_yield:.2%}")
+        d2.metric("Estimated Annual Dividend Income", f"${estimated_annual_income:,.0f}")
+        d3.metric("Monthly Dividend Income", f"${estimated_annual_income / 12:,.0f}")
+
+        fig_div_yield = px.bar(
+            dividend_df,
+            x="Ticker",
+            y="Dividend Yield",
+            title="Estimated Dividend Yield by Asset",
+            color="Ticker",
+            color_discrete_sequence=["#10B981", "#0EA5E9", "#8B5CF6", "#F59E0B", "#EF4444", "#14B8A6", "#6366F1"]
+        )
+        fig_div_yield.update_yaxes(tickformat=".2%")
+        fig_div_yield = apply_clean_theme(fig_div_yield)
+        st.plotly_chart(fig_div_yield, use_container_width=True)
+
+        st.markdown("""
+        <div class="accent-box">
+            <b>Dividend reinvestment simulator:</b> Compare portfolio growth when dividends are reinvested versus not reinvested.
+        </div>
+        """, unsafe_allow_html=True)
+
+        dividend_growth_rate = st.slider("Assumed Annual Dividend Growth Rate (%)", 0, 10, 3) / 100
+
+        dividend_projection = dividend_reinvestment_projection(
+            starting_value=current_savings,
+            monthly_savings=monthly_savings,
+            expected_return=expected_return,
+            dividend_yield=avg_dividend_yield,
+            dividend_growth_rate=dividend_growth_rate,
+            years=horizon
+        )
+
+        final_with_reinvestment = dividend_projection["With Dividend Reinvestment"].iloc[-1]
+        final_without_reinvestment = dividend_projection["Without Dividend Reinvestment"].iloc[-1]
+        reinvestment_benefit = final_with_reinvestment - final_without_reinvestment
+
+        r1, r2, r3 = st.columns(3)
+        r1.metric("With Reinvestment", f"${final_with_reinvestment:,.0f}")
+        r2.metric("Without Reinvestment", f"${final_without_reinvestment:,.0f}")
+        r3.metric("Reinvestment Benefit", f"${reinvestment_benefit:,.0f}")
+
+        fig_reinvest = go.Figure()
+
+        fig_reinvest.add_trace(
+            go.Scatter(
+                x=dividend_projection["Year"],
+                y=dividend_projection["With Dividend Reinvestment"],
+                mode="lines",
+                name="With Dividend Reinvestment",
+                line=dict(width=4, color="#10B981")
+            )
+        )
+
+        fig_reinvest.add_trace(
+            go.Scatter(
+                x=dividend_projection["Year"],
+                y=dividend_projection["Without Dividend Reinvestment"],
+                mode="lines",
+                name="Without Dividend Reinvestment",
+                line=dict(width=4, dash="dash", color="#0EA5E9")
+            )
+        )
+
+        fig_reinvest.update_layout(
+            title="Portfolio Growth: Dividends Reinvested vs Not Reinvested",
+            xaxis_title="Year",
+            yaxis_title="Portfolio Value"
+        )
+
+        fig_reinvest = apply_clean_theme(fig_reinvest)
+        st.plotly_chart(fig_reinvest, use_container_width=True)
+
+        fig_income_growth = px.area(
+            dividend_projection,
+            x="Year",
+            y="Estimated Annual Dividend Income",
+            title="Projected Annual Dividend Income Growth",
+            color_discrete_sequence=["#F59E0B"]
+        )
+
+        fig_income_growth = apply_clean_theme(fig_income_growth)
+        st.plotly_chart(fig_income_growth, use_container_width=True)
+
+        st.info(
+            "This module estimates dividend income using recent dividend history and a user-selected dividend growth rate. "
+            "Actual dividends can change depending on company earnings, ETF distributions, and market conditions."
+        )
 
     with tab_analyze:
         st.markdown("""
@@ -989,7 +1212,7 @@ try:
         <div class="card-title">AI Advisor Summary</div>
         <div class="card-text">
             A rule-based recommendation engine explains the user's risk profile, portfolio efficiency,
-            allocation suitability, and macro-risk exposure.
+            dividend income potential, allocation suitability, and macro-risk exposure.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -1003,7 +1226,8 @@ try:
         volatility,
         sharpe,
         allocation,
-        macro_label
+        macro_label,
+        avg_dividend_yield
     )
 
     for rec in ai_recs:
